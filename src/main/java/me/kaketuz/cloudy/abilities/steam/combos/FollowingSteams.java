@@ -50,6 +50,7 @@ public class FollowingSteams extends SteamAbility implements AddonAbility, Combo
         if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
 
         for (Cloud c : Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius)) {
+            c.setOwner(player);
             selectedClouds.add(c);
             count++;
             if (count >= maxClouds) break;

@@ -66,6 +66,7 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
             for (Cloud c : Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRange)) {
                 if (!FollowingSteams.isCloudInFollowingCouples(c) && !Objects.equals(c.getOwner(), player)) continue;
                 clouds.add(c);
+                c.setOwner(player);
                 count++;
                 if (count >= maxClouds) break;
             }

@@ -84,6 +84,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
                 if (c.getOwner() != null && !c.getOwner().equals(player)) continue;
             }
+            c.setOwner(player);
             clouds.put(c, new AtomicBoolean(false));
             count++;
             if (count >= maxClouds) break;

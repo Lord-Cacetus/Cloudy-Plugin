@@ -59,6 +59,7 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
             //Why not :/
             try {
                 cloud = Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).getLast();
+                cloud.setOwner(player);
             } catch (Exception e) {
                 return;
             }

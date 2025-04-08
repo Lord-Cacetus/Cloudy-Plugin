@@ -63,7 +63,6 @@ public class SteamControl extends SteamAbility implements AddonAbility {
 
             for (Cloud c : Cloud.getCloudsAroundPoint(targ, sourceRadius)) {
                 if (!FollowingSteams.isCloudInFollowingCouples(c) && !Objects.equals(c.getOwner(), player)) continue;
-
                 clouds.add(c);
                 count++;
                 if (count >= maxClouds) break;
