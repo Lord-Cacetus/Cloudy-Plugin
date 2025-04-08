@@ -1,0 +1,6 @@
+name: Cloudy
+version: '1.0.0'
+main: me.kaketuz.cloudy.Cloudy
+api-version: '1.20'
+authors: [ KaketuZ ]
+description: This pack will adds a lot of interesting abilities and a new SubElement - Steam!
