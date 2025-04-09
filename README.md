@@ -26,12 +26,14 @@
 
 - ThickHaze (Combo)
 - New variation of CloudStream
-- Wall Damage (CloudStream)# ᴄʟᴏᴜᴅʏ ᴘʟᴜɢɪɴ
+- Wall Damage (CloudStream)
 - Buff CloudCushion ability
 - More customization in config
 - More terrain and survival chips
 - AvatarState supporting
 - Change FogRun effects
+- Left-Click interaction(CloudCushion)
+- New Ability: CloudFission
 
 
 
