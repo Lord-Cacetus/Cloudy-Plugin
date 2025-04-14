@@ -1,5 +1,6 @@
 package me.kaketuz.cloudy.abilities.steam;
 
+import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import me.kaketuz.cloudy.Cloudy;
@@ -9,15 +10,19 @@ import me.kaketuz.cloudy.abilities.sub.SteamAbility;
 import me.kaketuz.cloudy.util.Methods;
 import me.kaketuz.cloudy.util.Particles;
 import me.kaketuz.cloudy.util.Sounds;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
+import org.bukkit.*;
+import org.bukkit.block.data.Ageable;
+import org.bukkit.block.data.type.Farmland;
+import org.bukkit.block.data.type.Sapling;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -36,6 +41,13 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
 
     private Location center;
 
+    private int speedBoost, jumpBoost;
+    private boolean affectOtherSteambenders;
+
+    private boolean canGrowPlants;
+    private int moistureFactor;
+    private double growChance;
+
     public CloudCushion(Player player, boolean instant) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this)) return;
@@ -48,7 +60,12 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
         cooldown = Cloudy.config.getLong("Steam.CloudCushion.Cooldown");
         duration = Cloudy.config.getLong("Steam.CloudCushion.Duration");
         followSpeed = Cloudy.config.getDouble("Steam.CloudCushion.FollowSpeed");
-
+        speedBoost = Cloudy.config.getInt("Steam.CloudCushion.SpeedBoost");
+        jumpBoost = Cloudy.config.getInt("Steam.CloudCushion.JumpBoost");
+        affectOtherSteambenders = Cloudy.config.getBoolean("Steam.CloudCushion.AffectOtherSteambenders");
+        canGrowPlants = Cloudy.config.getBoolean("Steam.CloudCushion.CanGrowPlants");
+        moistureFactor = Cloudy.config.getInt("Steam.CloudCushion.MoistureFactor");
+        growChance = Cloudy.config.getDouble("Steam.CloudCushion.GrowChance");
         if (!instant) {
             if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
 
@@ -110,7 +127,39 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
                 Particles.spawnParticle(Particle.CLOUD, center.clone().add(rv), 0, rv.getX(), 0.3, rv.getZ(), 0.1);
             }
 
-            GeneralMethods.getEntitiesAroundPoint(center, radius).forEach(e -> e.setFallDistance(.0f));
+            if (canGrowPlants) {
+                GeneralMethods.getBlocksAroundPoint(center, radius).stream()
+                        .filter(b -> b.getBlockData() instanceof Ageable || b.getType() == Material.FARMLAND)
+                        .forEach(b -> {
+                            if (b.getType() == Material.FARMLAND) {
+                                Farmland f = (Farmland) b.getBlockData();
+                                f.setMoisture(f.getMaximumMoisture());
+                            }
+                            else {
+                                if (Methods.chance(growChance)) {
+                                    Ageable a = (Ageable) b.getBlockData();
+                                    a.setAge(Math.min(a.getAge() + moistureFactor, a.getMaximumAge()));
+                                    b.setBlockData(a);
+                                }
+                            }
+                        });
+            }
+
+            GeneralMethods.getEntitiesAroundPoint(center, radius).forEach(e -> {
+                if (affectOtherSteambenders && e instanceof Player p &&
+                        BendingPlayer.getBendingPlayer(p) != null &&
+                        BendingPlayer.getBendingPlayer(p).canUseSubElement(STEAM)) {
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10, jumpBoost - 1, true, false, false));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, speedBoost - 1, true, false, false));
+                    e.setFallDistance(.0f);
+                }
+                else if (e.equals(player)) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10, jumpBoost - 1, true, false, false));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, speedBoost - 1, true, false, false));
+                    player.setFallDistance(.0f);
+                }
+
+            });
         }
     }
 
@@ -306,5 +355,37 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
 
     public void setReadyToLaunch(boolean readyToLaunch) {
         isReadyToLaunch = readyToLaunch;
+    }
+
+    public int getSpeedBoost() {
+        return speedBoost;
+    }
+
+    public int getJumpBoost() {
+        return jumpBoost;
+    }
+
+    public void setSpeedBoost(int speedBoost) {
+        this.speedBoost = speedBoost;
+    }
+
+    public void setJumpBoost(int jumpBoost) {
+        this.jumpBoost = jumpBoost;
+    }
+
+    public int getMoistureFactor() {
+        return moistureFactor;
+    }
+
+    public void setCanGrowPlants(boolean canGrowPlants) {
+        this.canGrowPlants = canGrowPlants;
+    }
+
+    public boolean isCanGrowPlants() {
+        return canGrowPlants;
+    }
+
+    public void setMoistureFactor(int moistureFactor) {
+        this.moistureFactor = moistureFactor;
     }
 }

@@ -17,6 +17,7 @@ import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.SplittableRandom;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Methods {
@@ -128,5 +129,13 @@ public class Methods {
             block.setBlockData(dat);
         }
 
+    }
+    private static final SplittableRandom rand = new SplittableRandom();
+    public static boolean chance(double percent) {
+        return rand.nextDouble(0, 100) <= percent;
+    }
+
+    public static boolean chanceConcurrent(double percent) {
+        return ThreadLocalRandom.current().nextDouble(0, 100) <= percent;
     }
 }

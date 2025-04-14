@@ -118,8 +118,6 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
         ratio += ringSpeed;
         if (currShots != 0 && clouds.values().stream().anyMatch(AtomicBoolean::get)) {
-            int iteration = 0;
-
             for (int i = 0; i < currShots; i++) {
                 double angle = i * (2 * Math.PI / currShots);
                 double x = currRad * Math.cos(angle + ratio);
@@ -130,13 +128,13 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                     new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(loc, 1, 0, 0, 0);
                 }
                 else {
-                    loc.setPitch(0);
-                    loc.setYaw(0);
-                    displays.get(iteration).setTeleportDuration(2);
-                    displays.get(iteration).teleport(loc);
+                    if (!displays.isEmpty()) {
+                        loc.setPitch(0);
+                        loc.setYaw(0);
+                        displays.get(i == displays.size() ? i - 1 : i).setTeleportDuration(2);
+                        displays.get(i == displays.size() ? i - 1 : i).teleport(loc);
+                    }
                 }
-                iteration++;
-                if (iteration >= displays.size()) iteration = 0;
             }
         }
 
@@ -150,16 +148,28 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                 c.addLivetime(100);
                 c.move(GeneralMethods.getDirection(c.getLocation(), player.getEyeLocation()).normalize().multiply(followSpeed));
                 if (c.getLocation().distance(player.getEyeLocation()) < 2) {
+                    displays.forEach(ItemDisplay::remove);
+                    displays.clear();
                     currShots += shotsPerCloudsAmount;
-                    if (displayVar) recalculateDisplays(false);
-                    for (int i = 0; i < currShots; i++) {
+
+                    for (int i = 0; i < currShots + 1; i++) {
                         double angle = i * (2 * Math.PI / currShots);
                         double x = currRad * Math.cos(angle + ratio);
                         double z = currRad * Math.sin(angle + ratio);
                         Location loc = player.getLocation().clone();
                         loc.add(x, 1, z);
                         Particles.spawnParticle(Particle.SNOWFLAKE, loc, 4, 0.2, 0.3, 0.2, 0.07);
+                        if (displayVar) {
+                            ItemDisplay db = (ItemDisplay) Objects.requireNonNull(loc.getWorld()).spawnEntity(loc, EntityType.ITEM_DISPLAY);
+                            db.setItemStack(new ItemStack(Material.ICE));
+                            Transformation t = db.getTransformation();
+                            t.getScale().set(new Vector3f(0.1f, 0.5f, 0.1f));
+                            db.setTransformation(t);
+                            displays.add(db);
+                        }
                     }
+
+                    if (displayVar) recalculateDisplays();
 
                     for (int i = 0; i < 10; i++) {
                         Vector rv = Methods.getRandom();
@@ -168,7 +178,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                     Sounds.playSound(player.getEyeLocation(), Sound.ENTITY_PLAYER_HURT_FREEZE, 0.5f, 1);
                     Sounds.playSound(player.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 0.5f, 0);
                     flag = false;
-                    c.hide();
+                    c.remove(true);
                     b.set(true);
                 }
             }
@@ -182,43 +192,16 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
     }
 
-    private void recalculateDisplays(boolean ignoreFirst) {
-        displays.forEach(d -> {
-            d.remove();
-            displays.remove(d);
-        });
-        int iteractions = 0;
-            for (int j = 0; j < currShots; j++) {
-                double angle = j * (2 * Math.PI / currShots);
-                double x = currRad * Math.cos(angle + ratio);
-                double z = currRad * Math.sin(angle + ratio);
-                Location loc = player.getLocation().clone();
-                loc.add(x, 1, z);
-
-                   loc.setYaw(0);
-                   loc.setPitch(0);
-
-                   if (ignoreFirst && iteractions == 0) {
-                       iteractions++;
-                       continue;
-                   }
-                   ItemDisplay db = (ItemDisplay) Objects.requireNonNull(loc.getWorld()).spawnEntity(loc, EntityType.ITEM_DISPLAY);
-                   db.setItemStack(new ItemStack(Material.ICE));
-                   Transformation t = db.getTransformation();
-                   t.getScale().set(new Vector3f(0.1f, 0.5f, 0.1f));
-                   db.setTransformation(t);
-                   displays.add(db);
-
-                   iteractions++;
-            }
-
-
+    private void recalculateDisplays() {
+        if (displays.isEmpty()) return;
+        displays.removeLast().remove();
+        //Thats all lol
     }
 
 
     public void shot() {
         Sounds.playSound(player.getEyeLocation(), Sound.ENTITY_PLAYER_HURT_FREEZE, 0.5f, 0);
-        if (displayVar) recalculateDisplays(true);
+        if (displayVar) recalculateDisplays();
         new Icicle();
         currShots--;
     }
@@ -302,6 +285,9 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
         private ItemDisplay icicle;
 
+        private Location arc;
+        private double c;
+
         public Icicle() {
             origin = player.getEyeLocation();
             location = origin.clone();
@@ -324,6 +310,8 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                 add.setPitch(pitch);
                 add.setYaw(yaw);
 
+                c = 90;
+
                 icicle.teleport(add);
             }
 
@@ -340,6 +328,15 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         @Override
         public void run() {
             location = location.add(direction);
+            arc = location.clone();
+            float pitch = location.getPitch();
+            float yaw = location.getYaw();
+
+            pitch += location.getPitch() >= 0 ? -c : c;
+
+            arc.setPitch(pitch);
+            arc.setYaw(yaw);
+
 
             if (!displayVar) {
                 Particles.spawnParticle(Particle.SNOWFLAKE, location, 0, direction.getX(), direction.getY(), direction.getZ(), 0.2);
@@ -348,16 +345,16 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
             }
             else {
                 icicle.setTeleportDuration(3);
-                Location add = location.clone().setDirection(direction);
-                float pitch = location.getPitch();
-                float yaw = location.getYaw();
+//                Location add = location.clone().setDirection(direction);
+//                float pitch = location.getPitch();
+//                float yaw = location.getYaw();
+//
+//                pitch += location.getPitch() >= 0 ? -90 : 90;
+//
+//                add.setPitch(pitch);
+//                add.setYaw(yaw);
 
-                pitch += location.getPitch() >= 0 ? -90 : 90;
-
-                add.setPitch(pitch);
-                add.setYaw(yaw);
-
-                icicle.teleport(add);
+                icicle.teleport(arc);
             }
             RayTraceResult result = Objects.requireNonNull(location.getWorld()).rayTraceBlocks(location, direction, speed, FluidCollisionMode.NEVER, true);
 
@@ -372,7 +369,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
             if (origin.distance(location) >= range) {
                 if (gravityFalling) {
                     direction.subtract(new Vector(0, 0.08, 0));
-
+                    c++; //C++ NO WAY
                 }
                 else cancel();
             }
@@ -578,4 +575,5 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
     public void setSpeed(double speed) {
         this.speed = speed;
     }
+
 }

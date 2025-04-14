@@ -64,6 +64,16 @@ public class Configuration {
         config.addDefault("Steam.CloudStream.FlowDuration", 1500);
         config.addDefault("Steam.CloudStream.Description", "This is a very powerful steam ability. With it, you create a massive stream of steam that will blow away everyone in its path, including yourself.");
         config.addDefault("Steam.CloudStream.Instructions", "Hold the shift while looking at water or ice. After that, a small funnel is formed. It's a sign that you're doing everything right. After that, click the left mouse button, looking in the direction you want the steam stream to fly.");
+        config.addDefault("Steam.CloudStream.Geyser.Range", 5);
+        config.addDefault("Steam.CloudStream.Geyser.Speed", 1.5);
+        config.addDefault("Steam.CloudStream.Geyser.Damage", 2);
+        config.addDefault("Steam.CloudStream.Geyser.UppercutPower", 1);
+        config.addDefault("Steam.CloudStream.Geyser.CollisionRadius", 0.5);
+        config.addDefault("Steam.CloudStream.Geyser.SourceRange", 8);
+        config.addDefault("Steam.CloudStream.Geyser.Cooldown", 3000);
+        config.addDefault("Steam.CloudStream.Geyser.Enabled", true);
+        config.addDefault("Steam.CloudStream.Geyser.Instructions", "click the left mouse button while looking at the water or ice");
+        config.addDefault("Steam.CloudStream.Geyser.Description", "This combination is a variation of CloudStream's ability. You create a geyser of steam that will cause damage and lift those who fall under the geyser.");
 
         //FumeAbsorption
         config.addDefault("Steam.FumeAbsorption.Enabled", true);
@@ -75,6 +85,7 @@ public class Configuration {
         config.addDefault("Steam.FumeAbsorption.StreamsMultiplier", 5);
         config.addDefault("Steam.FumeAbsorption.FollowSpeed", 0.5);
         config.addDefault("Steam.FumeAbsorption.SourceRadius", 10);
+        config.addDefault("Steam.FumeAbsorption.RandomDirections", false);
         config.addDefault("Steam.FumeAbsorption.Cooldown", 14000);
         config.addDefault("Steam.FumeAbsorption.Description", "Another very powerful steam ability. You collect all the clouds in the vicinity and increase the pressure around you. After that, any action can trigger an explosion. If an explosion occurs, a powerful wave of steam will form that will cause great damage and strongly repel any entities from you. (The power of the explosion depends on the number of clouds collected)");
         config.addDefault("Steam.FumeAbsorption.Instructions", "Hold down the shift. After that, the nearest clouds will start flying towards you. After they reach you, you can release the shift to cause an explosion.");
@@ -105,6 +116,12 @@ public class Configuration {
         config.addDefault("Steam.CloudCushion.Cooldown", 12000);
         config.addDefault("Steam.CloudCushion.Duration", 7000);
         config.addDefault("Steam.CloudCushion.FollowSpeed", 0.7);
+        config.addDefault("Steam.CloudCushion.SpeedBoost", 3);
+        config.addDefault("Steam.CloudCushion.JumpBoost", 3);
+        config.addDefault("Steam.CloudCushion.CanGrowPlants", true);
+        config.addDefault("Steam.CloudCushion.MoistureFactor", 1);
+        config.addDefault("Steam.CloudCushion.GrowChance", 15);
+        config.addDefault("Steam.CloudCushion.AffectOtherSteambenders", true);
         config.addDefault("Steam.CloudCushion.Description", "This auxiliary ability will help you and other entities escape from fall damage. You take one cloud and throw it wherever you want. Upon reaching the block, it explodes, covering the surface with a layer of steam that will protect you and other entities from falling. And if the steam flow does not touch the blocks, it creates a small explosion that will push away everyone who will be nearby.");
         config.addDefault("Steam.CloudCushion.Instructions", "Hold down the shift. After that, the nearest cloud will fly up to you. When it reaches you, click the left mouse button to shoot a stream of steam.");
 
@@ -131,6 +148,7 @@ public class Configuration {
         config.addDefault("Steam.Combo.FogRun.Speed", 1);
         config.addDefault("Steam.Combo.FogRun.RemoveIfHitWall", true);
         config.addDefault("Steam.Combo.FogRun.EndFade", true);
+        config.addDefault("Steam.Combo.FogRun.OldEffects", false);
         config.addDefault("Steam.Combo.FogRun.Combination", Arrays.asList("CloudStream:SHIFT_DOWN", "CloudCushion:LEFT_CLICK"));
         config.addDefault("Steam.Combo.FogRun.Description", "Another combination that will help you move quickly through the water. With it, you can run quickly through the water, leaving a trail of mist.");
         config.addDefault("Steam.Combo.FogRun.Instructions", "CloudStream: Shift down -> CloudCushion: Left click");
@@ -147,6 +165,10 @@ public class Configuration {
         config.addDefault("Steam.Combo.GloomyHails.SpawnHailChance", 1);
         config.addDefault("Steam.Combo.GloomyHails.Cooldown", 20000);
         config.addDefault("Steam.Combo.GloomyHails.Duration", 7000);
+        config.addDefault("Steam.Combo.GloomyHails.DisplayVariation", true);
+        config.addDefault("Steam.Combo.GloomyHails.HailHeight", 0.5);
+        config.addDefault("Steam.Combo.GloomyHails.CanBreakPlants", true);
+        config.addDefault("Steam.Combo.GloomyHails.ForcedBreak", false);
         config.addDefault("Steam.Combo.GloomyHails.Combination", Arrays.asList("Evaporate:SHIFT_DOWN", "Evaporate:SHIFT_UP", "Evaporate:SHIFT_DOWN", "Evaporate:SHIFT_UP", "Evaporate:LEFT_CLICK", "Evaporate:SHIFT_DOWN"));
         config.addDefault("Steam.Combo.GloomyHails.Description", "This combination will help you turn all the nearby clouds into gloomy clouds that will form a powerful hail under them.");
         config.addDefault("Steam.Combo.GloomyHails.Instructions", "Evaporate: sneak twice -> Evaporate: left click -> Evaporate: sneak");

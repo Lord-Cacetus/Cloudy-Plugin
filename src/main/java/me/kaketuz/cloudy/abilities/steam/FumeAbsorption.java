@@ -12,16 +12,14 @@ import me.kaketuz.cloudy.abilities.sub.SteamAbility;
 import me.kaketuz.cloudy.util.Methods;
 import me.kaketuz.cloudy.util.Particles;
 import me.kaketuz.cloudy.util.Sounds;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.*;
+import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -35,6 +33,8 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
     private double minRange, speed, knockback, damage, sourceRange, followSpeed;
 
     private long cooldown;
+
+    private boolean randomDirections;
 
     private final List<Cloud> clouds = new CopyOnWriteArrayList<>();
     private final List<Cloud> ready = new CopyOnWriteArrayList<>();
@@ -54,6 +54,7 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
         followSpeed = Cloudy.config.getDouble("Steam.FumeAbsorption.FollowSpeed");
         sourceRange = Cloudy.config.getDouble("Steam.FumeAbsorption.SourceRadius");
         cooldown = Cloudy.config.getLong("Steam.FumeAbsorption.Cooldown");
+        randomDirections = Cloudy.config.getBoolean("Steam.FumeAbsorption.RandomDirections");
 
         this.isInstant = instant;
 
@@ -125,9 +126,22 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
                 Sounds.playSound(player.getLocation(), Sound.valueOf("ENTITY_BREEZE_WIND_BURST"), 0.5f, 0);
             }
         }
-        for (int i = 0; i < ready.size() * streamsMultiplier; i++) {
-            new SteamFlow(player.getEyeLocation(), null, 2, 2000, false, 0);
-            new Stream(player.getLocation().add(0, 1, 0), minRange + ready.size() * streamsMultiplier, speed, damage, knockback);
+        if (randomDirections) {
+            for (int i = 0; i < ready.size() * streamsMultiplier; i++) {
+                new SteamFlow(player.getEyeLocation(), null, 2, 2000, false, 0);
+                new Stream(player.getLocation().add(0, 1, 0), minRange + ready.size() * streamsMultiplier, speed, damage, knockback, null);
+            }
+        }
+        else {
+            for (int i = 0; i < ready.size() * streamsMultiplier; i++) {
+                double angle = i * (2 * Math.PI / (ready.size() * streamsMultiplier));
+                double x = 0.1 * Math.cos(angle);
+                double z = 0.1 * Math.sin(angle);
+                Location loc = player.getLocation().clone();
+                loc.add(x, 1, z);
+                new SteamFlow(loc, null, 2, 2000, false, 0);
+                new Stream(loc, minRange + ready.size() * streamsMultiplier, speed, damage, knockback, new Vector(x, 0, z).multiply(speed));
+            }
         }
         clouds.forEach(c -> c.remove(true));
         super.remove();
@@ -189,14 +203,15 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
 
         private final Set<Entity> damaged = new HashSet<>();
 
-        public Stream(Location location, double range, double speed, double damage, double knockback) {
+        public Stream(Location location, double range, double speed, double damage, double knockback, Vector direction) {
             this.origin = location.clone();
             this.location = origin.clone();
             this.range = range;
             this.speed = speed;
             this.damage = damage;
             this.knockback = knockback;
-            this.direction = Methods.getRandom().multiply(speed).setY(0).normalize();
+            this.direction = direction == null ? Methods.getRandom().multiply(speed).setY(0).normalize() : direction;
+            this.direction.normalize().multiply(speed);
             this.runTaskTimer(Cloudy.plugin, 1L, 0);
         }
 
@@ -326,4 +341,11 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
         isInstant = instant;
     }
 
+    public boolean isRandomDirections() {
+        return randomDirections;
+    }
+
+    public void setRandomDirections(boolean randomDirections) {
+        this.randomDirections = randomDirections;
+    }
 }

@@ -27,7 +27,6 @@
 - ThickHaze (Combo)
 - New variation of CloudStream
 - Wall Damage (CloudStream)
-- Buff CloudCushion ability
 - More customization in config
 - More terrain and survival chips
 - AvatarState supporting

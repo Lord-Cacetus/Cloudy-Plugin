@@ -7,10 +7,13 @@ import me.kaketuz.cloudy.abilities.steam.*;
 import me.kaketuz.cloudy.abilities.steam.combos.CoupleIcicles;
 import me.kaketuz.cloudy.abilities.steam.combos.FollowingSteams;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
+import me.kaketuz.cloudy.abilities.steam.util.CloudStreamGeyser;
 import me.kaketuz.cloudy.util.GradientAPI;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.server.ServerLoadEvent;
@@ -50,6 +53,14 @@ public class AbilityListener implements Listener {
 
         if (bPlayer == null) return;
 
+        if (!CoreAbility.hasAbility(player, CloudStream.class) && bPlayer.getBoundAbilityName().equalsIgnoreCase("CloudStream")) {
+            if (event.getAction().equals(Action.LEFT_CLICK_BLOCK) && Cloudy.config.getBoolean("Steam.CloudStream.Geyser.Enabled")) {
+                new CloudStreamGeyser(player);
+                return;
+            }
+
+        }
+
         if (CoreAbility.hasAbility(player, SteamControl.class)) CoreAbility.getAbility(player, SteamControl.class).throwCloud();
         if (CoreAbility.hasAbility(player, CloudStream.class)) CoreAbility.getAbility(player, CloudStream.class).launch();
         if (CoreAbility.hasAbility(player, VaporBomb.class)) {
@@ -61,6 +72,8 @@ public class AbilityListener implements Listener {
                 CoreAbility.getAbility(player, CloudCushion.class).launch();
             }
         }
+
+
 
         if (CoreAbility.hasAbility(player, FollowingSteams.class)) {
             switch (bPlayer.getBoundAbilityName().toUpperCase()) {
@@ -83,8 +96,7 @@ public class AbilityListener implements Listener {
             CoreAbility.getAbility(player, CoupleIcicles.class).shot();
         }
     }
-
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBendingReload(BendingReloadEvent event) {
         Cloud.getClouds().forEach(c -> c.remove(true));
 

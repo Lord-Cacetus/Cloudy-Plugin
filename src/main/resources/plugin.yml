@@ -1,5 +1,5 @@
 name: Cloudy
-version: '1.0.0'
+version: 'v1.1.0'
 main: me.kaketuz.cloudy.Cloudy
 api-version: '1.20'
 authors: [ KaketuZ ]

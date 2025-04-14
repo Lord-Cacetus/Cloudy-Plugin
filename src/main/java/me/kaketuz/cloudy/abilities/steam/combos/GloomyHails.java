@@ -7,6 +7,7 @@ import com.projectkorra.projectkorra.ability.util.ComboManager;
 import com.projectkorra.projectkorra.ability.util.ComboUtil;
 import com.projectkorra.projectkorra.util.ColoredParticle;
 import com.projectkorra.projectkorra.util.DamageHandler;
+import com.projectkorra.projectkorra.util.TempBlock;
 import me.kaketuz.cloudy.Cloudy;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
 import me.kaketuz.cloudy.abilities.sub.SteamAbility;
@@ -14,11 +15,18 @@ import me.kaketuz.cloudy.util.Methods;
 import me.kaketuz.cloudy.util.Particles;
 import me.kaketuz.cloudy.util.Sounds;
 import org.bukkit.*;
+import org.bukkit.block.data.Ageable;
+import org.bukkit.block.data.type.Farmland;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +45,13 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
 
     private Vector direction;
 
+    private boolean displayVar;
+    private float hailHeight;
+
+    private boolean canBreakPlants, forcedBreak;
+
+    private double growChance;
+
 
     public GloomyHails(Player player) {
         super(player);
@@ -52,6 +67,11 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
         spawnHailChance = Cloudy.config.getDouble("Steam.Combo.GloomyHails.SpawnHailChance");
         cooldown = Cloudy.config.getLong("Steam.Combo.GloomyHails.Cooldown");
         duration = Cloudy.config.getLong("Steam.Combo.GloomyHails.Duration");
+        displayVar = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.DisplayVariation");
+        hailHeight = (float) Cloudy.config.getDouble("Steam.Combo.GloomyHails.HailHeight");
+        canBreakPlants = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.CanBreakPlants");
+        forcedBreak = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.ForcedBreak");
+
 
         int count = 0;
 
@@ -165,6 +185,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
         private Location location;
         private final Location origin;
         private final Vector direction;
+        private ItemDisplay icicle;
 
         public Hail() {
             origin = locations.get(ThreadLocalRandom.current().nextInt(0, locations.size()))
@@ -173,6 +194,15 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
                             .multiply(ThreadLocalRandom.current().nextDouble(0, radius)));
             location = origin.clone();
             direction = new Vector(0, -1, 0).multiply(hailSpeed);
+
+            if (displayVar) {
+                icicle = (ItemDisplay) origin.getWorld().spawnEntity(origin.clone(), EntityType.ITEM_DISPLAY);
+                icicle.setItemStack(new ItemStack(Material.ICE));
+                Transformation t = icicle.getTransformation();
+                t.getScale().set(new Vector3f(0.1f, hailHeight, 0.1f));
+                icicle.setTransformation(t);
+            }
+
             this.runTaskTimer(Cloudy.plugin, 1L, 0);
         }
 
@@ -183,6 +213,16 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
 
             location = location.add(direction);
 
+            if (canBreakPlants) {
+                GeneralMethods.getBlocksAroundPoint(location, 1).stream()
+                        .filter(b -> b.getBlockData() instanceof Ageable)
+                        .forEach(b -> {
+                            if (forcedBreak) new TempBlock(b, Material.AIR);
+                            else b.breakNaturally();
+                        });
+            }
+
+
             RayTraceResult result = Objects.requireNonNull(location.getWorld()).rayTraceBlocks(location, direction, hailSpeed, FluidCollisionMode.ALWAYS, true);
 
             Optional.ofNullable(result)
@@ -190,9 +230,14 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
                     .filter(GeneralMethods::isSolid)
                     .ifPresent(b -> cancel());
 
-            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
-            new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
-
+            if (!displayVar) {
+                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
+                new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
+            }
+            else {
+                icicle.setTeleportDuration(3);
+                icicle.teleport(location);
+            }
             GeneralMethods.getEntitiesAroundPoint(location, collisionRadius).stream()
                     .filter(e -> e instanceof LivingEntity && !e.getUniqueId().equals(player.getUniqueId()))
                     .forEach(e -> {
@@ -207,6 +252,11 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
         public synchronized void cancel() throws IllegalStateException {
             super.cancel();
             Sounds.playSound(location, Sound.BLOCK_GLASS_BREAK, 0.5f, 1.4f);
+            if (displayVar) {
+                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(icicle.getItemStack()).getType().createBlockData());
+                icicle.remove();
+
+            }
         }
     }
     @Override
@@ -300,4 +350,35 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
         this.spawnHailChance = spawnHailChance;
     }
 
+    public boolean isDisplayVar() {
+        return displayVar;
+    }
+
+    public void setDisplayVar(boolean displayVar) {
+        this.displayVar = displayVar;
+    }
+
+    public float getHailHeight() {
+        return hailHeight;
+    }
+
+    public void setHailHeight(float hailHeight) {
+        this.hailHeight = hailHeight;
+    }
+
+    public boolean isCanBreakPlants() {
+        return canBreakPlants;
+    }
+
+    public void setCanBreakPlants(boolean canBreakPlants) {
+        this.canBreakPlants = canBreakPlants;
+    }
+
+    public boolean isForcedBreak() {
+        return forcedBreak;
+    }
+
+    public void setForcedBreak(boolean forcedBreak) {
+        this.forcedBreak = forcedBreak;
+    }
 }

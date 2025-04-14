@@ -29,6 +29,8 @@ public class CloudStream extends SteamAbility implements AddonAbility {
     private Location origin, location;
     private Vector direction;
 
+
+
     public CloudStream(Player player, boolean instant) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, CloudStream.class)) return;

@@ -35,6 +35,8 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
 
     private Vector direction;
 
+    private boolean oldEffects;
+
     public FogRun(Player player) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this)) return;
@@ -46,6 +48,7 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
         speed = Cloudy.config.getDouble("Steam.Combo.FogRun.Speed");
         removeIfHitWall = Cloudy.config.getBoolean("Steam.Combo.FogRun.RemoveIfHitWall");
         endFade = Cloudy.config.getBoolean("Steam.Combo.FogRun.EndFade");
+        oldEffects = Cloudy.config.getBoolean("Steam.Combo.FogRun.OldEffects");
 
         Block b = player.getLocation().getBlock().getRelative(BlockFace.DOWN, 1);
 
@@ -74,7 +77,16 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
                     GeneralMethods.getLeftSide(player.getLocation().add(0, 0.5, 0), 1):
                     GeneralMethods.getRightSide(player.getLocation().add(0, 0.5, 0), 1);
             loc.add(Methods.getRandom().multiply(ThreadLocalRandom.current().nextDouble(0, 2)));
-            flows.add(new SteamFlow(loc, direction.clone().multiply(-1), speed, flowDuration, true, 0));
+
+            if (oldEffects) {
+                flows.add(new SteamFlow(loc, direction.clone().multiply(-1), speed, flowDuration, true, 0));
+            }
+            else {
+                for (int i = 0; i < 40; i++) {
+                    Vector rv = Methods.getRandom().setY(0.05).normalize().multiply(ThreadLocalRandom.current().nextDouble(0, 4));
+                    Particles.spawnParticle(Particle.CLOUD, loc.clone().add(rv), 0, -direction.getX() + rv.getX(), -direction.getY(), -direction.getZ() + rv.getZ(), 0.1);
+                }
+            }
 
         flows.removeIf(SteamFlow::isCancelled);
 
@@ -246,4 +258,11 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
         this.removeIfHitWall = removeIfHitWall;
     }
 
+    public boolean isOldEffects() {
+        return oldEffects;
+    }
+
+    public void setOldEffects(boolean oldEffects) {
+        this.oldEffects = oldEffects;
+    }
 }

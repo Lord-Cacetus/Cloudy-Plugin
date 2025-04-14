@@ -24,6 +24,7 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class Cloud extends BukkitRunnable implements Trackable {
@@ -94,7 +95,7 @@ public class Cloud extends BukkitRunnable implements Trackable {
         this.snowVarHeight = Cloudy.config.getInt("Cloud.SnowVarHeight");
         this.formTracker = new LocationVelocityTracker(location, new Vector(0, formSpeed, 0), this);
         this.random = new SplittableRandom();
-        this.ambientDir = Methods.getRandom().multiply(ambientMovementSpeed);
+        this.ambientDir = Methods.getRandom().setY(0).normalize().multiply(ambientMovementSpeed);
         if (Methods.isNetherBiome(location)) return;
 
 
@@ -116,7 +117,7 @@ public class Cloud extends BukkitRunnable implements Trackable {
             Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.2f, 0.75f);
         }
 
-        if (location.getBlockY() >= snowVarHeight && snowVariable) {
+        if (location.getBlockY() >= snowVarHeight || Methods.getTemperature(location) <= 0 && snowVariable) {
 
             if (!hide) {
                 Particles.spawnParticle(Particle.SNOWFLAKE, location, particleAmount / 2, 0.5, 0.5, 0.5, 0);
@@ -148,7 +149,7 @@ public class Cloud extends BukkitRunnable implements Trackable {
         }
         else {
             if (canMoveByAmbient && !isForming) {
-                if (random.nextInt(0, 100) < 5) this.ambientDir.add(Methods.getRandom().normalize().multiply(ambientMovementSpeed));
+                if (random.nextInt(0, 100) < 5) this.ambientDir.add(Methods.getRandom().setY(0).normalize().multiply(ambientMovementSpeed));
                 move(ambientDir);
             }
         }
@@ -177,7 +178,16 @@ public class Cloud extends BukkitRunnable implements Trackable {
         if (isAfterFire && !isForming) {
             if (System.currentTimeMillis() > startAfterFireTiming + fireBuffDuration) isAfterFire = false;
         }
-        if (!hide) Particles.spawnParticle(Particle.CLOUD, location, particleAmount, 0.5, 0.5, 0.5, isAfterFire ? 0.08 : 0);
+        if (!hide) {
+            if (!isAfterFire) {
+                for (int i = 0; i < particleAmount; i++) {
+                    Vector rv = Methods.getRandom().multiply(ThreadLocalRandom.current().nextDouble(0, collisionRadius));
+                    Vector d = location.getDirection();
+                    Particles.spawnParticle(Particle.CLOUD, location.clone().add(rv), 0, d.getX(), d.getX(), d.getX(), d.length());
+                }
+            }
+            else Particles.spawnParticle(Particle.CLOUD, location, particleAmount, 0.5, 0.5, 0.5, 0.08);
+        }
 
 
         if (isForming) {
