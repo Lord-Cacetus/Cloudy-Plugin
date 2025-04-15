@@ -1,14 +1,22 @@
 package me.kaketuz.cloudy;
 
+import me.kaketuz.cloudy.util.Config;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class Configuration {
 
+    public static Config configu;
+
+    public Configuration() {
+        configu = new Config(new File("configuration.yml"));
+    }
+
 
     public static void register() {
-        FileConfiguration config = Cloudy.config;
+        FileConfiguration config = configu.get();
 
         config.addDefault("Steam.SubElementColor", "#CCEFFF");
 
@@ -193,7 +201,6 @@ public class Configuration {
         config.addDefault("Steam.Combo.CoupleIcicles.Combination", Arrays.asList("Evaporate:SHIFT_DOWN", "Evaporate:SHIFT_UP", "SteamControl:LEFT_CLICK", "SteamControl:SHIFT_DOWN"));
         config.addDefault("Steam.Combo.CoupleIcicles.Description", "One of the strongest steam combinations is CoupleIcicles. With it, you collect clouds that are near you and transform them into icicles. The more clouds you collect, the more icicles there will be");
         config.addDefault("Steam.Combo.CoupleIcicles.Instructions", "Evaporate: shift down, shift up -> SteamControl: left click -> SteamControl: shift down");
-        config.options().copyDefaults(true);
-        Cloudy.plugin.saveConfig();
+        configu.save();
     }
 }

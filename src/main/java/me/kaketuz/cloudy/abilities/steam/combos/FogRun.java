@@ -50,9 +50,14 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
         endFade = Cloudy.config.getBoolean("Steam.Combo.FogRun.EndFade");
         oldEffects = Cloudy.config.getBoolean("Steam.Combo.FogRun.OldEffects");
 
-        Block b = player.getLocation().getBlock().getRelative(BlockFace.DOWN, 1);
 
-        if (!isWater(b) && !isIce(b)) return;
+
+        if (GeneralMethods.getBlocksAroundPoint(player.getLocation(), 2).stream()
+                .filter(b2 -> isWater(b2) || isIce(b2))
+                .toList()
+                .isEmpty()) return;
+
+
 
         direction = player.getLocation().getDirection().setY(0).normalize().multiply(speed);
 
@@ -66,14 +71,16 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
             remove();
         }
 
-        Block b1 = player.getLocation().getBlock().getRelative(BlockFace.DOWN, 1);
-
-        if (!isWater(b1) && !isIce(b1)) {
+        if (GeneralMethods.getBlocksAroundPoint(player.getLocation(), 2).stream()
+                .filter(b2 -> isWater(b2) || isIce(b2))
+                .toList()
+                .isEmpty()) {
             bPlayer.addCooldown(this);
             remove();
         }
 
-            Location loc = ThreadLocalRandom.current().nextBoolean()?
+
+        Location loc = ThreadLocalRandom.current().nextBoolean()?
                     GeneralMethods.getLeftSide(player.getLocation().add(0, 0.5, 0), 1):
                     GeneralMethods.getRightSide(player.getLocation().add(0, 0.5, 0), 1);
             loc.add(Methods.getRandom().multiply(ThreadLocalRandom.current().nextDouble(0, 2)));
@@ -113,7 +120,7 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
             }
         }
         if (removeIfHitWall) {
-            RayTraceResult result2 = player.getWorld().rayTraceBlocks(player.getEyeLocation(), direction, speed / 2, FluidCollisionMode.NEVER, true);
+            RayTraceResult result2 = player.getWorld().rayTraceBlocks(player.getEyeLocation(), direction.setY(0).normalize(), speed / 2, FluidCollisionMode.NEVER, true);
 
             Optional.ofNullable(result2)
                     .map(RayTraceResult::getHitBlock)

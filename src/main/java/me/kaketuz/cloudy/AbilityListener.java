@@ -54,7 +54,7 @@ public class AbilityListener implements Listener {
         if (bPlayer == null) return;
 
         if (!CoreAbility.hasAbility(player, CloudStream.class) && bPlayer.getBoundAbilityName().equalsIgnoreCase("CloudStream")) {
-            if (event.getAction().equals(Action.LEFT_CLICK_BLOCK) && Cloudy.config.getBoolean("Steam.CloudStream.Geyser.Enabled")) {
+            if (Cloudy.config.getBoolean("Steam.CloudStream.Geyser.Enabled")) {
                 new CloudStreamGeyser(player);
                 return;
             }
@@ -100,8 +100,8 @@ public class AbilityListener implements Listener {
     public void onBendingReload(BendingReloadEvent event) {
         Cloud.getClouds().forEach(c -> c.remove(true));
 
-        Cloudy.plugin.reloadConfig();
-        event.getSender().sendMessage(GradientAPI.colorize("<#919CC2>Cloudy | Config reloaded!</#D2FFFA>"));
+        Configuration.configu.reload();
+        event.getSender().sendMessage(GradientAPI.colorize("<#919CC2>ᴄʟᴏᴜᴅʏ | ᴄᴏɴꜰɪɢ ʀᴇʟᴏᴀᴅᴇᴅ!</#D2FFFA>"));
     }
 
     @EventHandler

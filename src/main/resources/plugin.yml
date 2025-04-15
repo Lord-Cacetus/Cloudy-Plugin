@@ -1,6 +1,13 @@
 name: Cloudy
-version: 'v1.1.0'
+version: 'v1.1.1'
 main: me.kaketuz.cloudy.Cloudy
 api-version: '1.20'
-authors: [ KaketuZ ]
+authors: [ Lord_Cacetus_ ]
 description: This pack will adds a lot of interesting abilities and a new SubElement - Steam!
+commands:
+  cloudy:
+    description: reload command
+    usage: /cloudy|cl|cldy reload
+    aliases:
+      - cl
+      - cldy

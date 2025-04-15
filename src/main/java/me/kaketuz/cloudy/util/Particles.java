@@ -5,6 +5,8 @@ import org.bukkit.Particle;
 
 import java.util.Objects;
 
+// TODO: сделать поддержку версий от 1.12 до 1.21.5
+
 //IM
 public class Particles {
     public static void spawnParticle(Particle particle, Location location, int amount, double xOffset, double yOffset, double zOffset, double speed) {

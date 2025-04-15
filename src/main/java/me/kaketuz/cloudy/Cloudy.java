@@ -5,6 +5,7 @@ import com.projectkorra.projectkorra.ability.Ability;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
 import me.kaketuz.cloudy.abilities.sub.SteamAbility;
+import me.kaketuz.cloudy.commands.ReloadCommand;
 import me.kaketuz.cloudy.util.GradientAPI;
 import me.kaketuz.cloudy.util.logger.ANSIValues;
 import me.kaketuz.cloudy.util.logger.Logger;
@@ -21,12 +22,18 @@ public final class Cloudy extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
-        config = this.getConfig();
+
         version = plugin.getDescription().getVersion();
 
+        new Configuration();
+        config = Configuration.configu.get();
         AbilityListener.registerListener();
         Configuration.register();
         CoreAbility.registerPluginAbilities(this, "me.kaketuz.cloudy.abilities");
+
+        ReloadCommand.register();
+
+
 
         Logger.sendCustom("Thanks for installing the Cloudy Plugin! The Developer is very grateful to you!!! <3", ANSIValues.PURPLE);
         Logger.sendSuccessfully("Cloudy plugin was successfully enabled!");

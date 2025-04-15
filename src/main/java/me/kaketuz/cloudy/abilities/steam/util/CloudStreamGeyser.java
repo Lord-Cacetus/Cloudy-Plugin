@@ -1,5 +1,6 @@
 package me.kaketuz.cloudy.abilities.steam.util;
 
+import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ComboAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
@@ -66,6 +67,9 @@ public class CloudStreamGeyser extends SteamAbility implements AddonAbility, Com
             else if (WaterArmsSpear.canThaw(source)) WaterArmsSpear.thaw(source);
             else if (!PhaseChange.thaw(source)) source.setType(Material.WATER);
         }
+
+        if (!GeneralMethods.getEntitiesAroundPoint(source.getLocation(), collisionRadius * 2, e -> e instanceof  LivingEntity && !e.getUniqueId().equals(player.getUniqueId())).isEmpty())
+            source = GeneralMethods.getEntitiesAroundPoint(source.getLocation(), collisionRadius * 2, e -> e instanceof  LivingEntity && !e.getUniqueId().equals(player.getUniqueId())).getLast().getLocation().getBlock();
 
         origin = source.getLocation().clone();
         location = origin.clone();

@@ -183,11 +183,12 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
     private class Hail extends BukkitRunnable {
 
         private Location location;
-        private final Location origin;
-        private final Vector direction;
+        private Location origin;
+        private Vector direction;
         private ItemDisplay icicle;
 
         public Hail() {
+            if (locations.isEmpty()) return;
             origin = locations.get(ThreadLocalRandom.current().nextInt(0, locations.size()))
                     .clone()
                     .add(Methods.getRandom()
@@ -223,7 +224,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
             }
 
 
-            RayTraceResult result = Objects.requireNonNull(location.getWorld()).rayTraceBlocks(location, direction, hailSpeed, FluidCollisionMode.ALWAYS, true);
+            RayTraceResult result = Objects.requireNonNull(location.getWorld()).rayTraceBlocks(location, direction, hailSpeed / 2, FluidCollisionMode.ALWAYS, true);
 
             Optional.ofNullable(result)
                     .map(RayTraceResult::getHitBlock)
@@ -235,7 +236,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
                 new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
             }
             else {
-                icicle.setTeleportDuration(3);
+                icicle.setTeleportDuration(1);
                 icicle.teleport(location);
             }
             GeneralMethods.getEntitiesAroundPoint(location, collisionRadius).stream()
