@@ -163,7 +163,7 @@ public class SteamControl extends SteamAbility implements AddonAbility {
 
     @Override
     public boolean isSneakAbility() {
-        return false;
+        return true;
     }
 
     @Override

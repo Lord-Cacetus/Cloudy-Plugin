@@ -110,7 +110,7 @@ public class CloudStream extends SteamAbility implements AddonAbility {
 
     @Override
     public boolean isSneakAbility() {
-        return false;
+        return true;
     }
 
     @Override

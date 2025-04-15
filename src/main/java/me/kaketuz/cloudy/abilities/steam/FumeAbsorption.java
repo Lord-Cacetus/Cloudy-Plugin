@@ -149,7 +149,7 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
 
     @Override
     public boolean isSneakAbility() {
-        return false;
+        return true;
     }
 
     @Override
