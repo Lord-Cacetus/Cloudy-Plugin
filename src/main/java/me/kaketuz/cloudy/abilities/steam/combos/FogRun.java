@@ -10,9 +10,11 @@ import me.kaketuz.cloudy.abilities.steam.util.SteamFlow;
 import me.kaketuz.cloudy.abilities.sub.SteamAbility;
 import me.kaketuz.cloudy.util.Methods;
 import me.kaketuz.cloudy.util.Particles;
+import me.kaketuz.cloudy.util.Sounds;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -37,6 +39,9 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
 
     private boolean oldEffects;
 
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
     public FogRun(Player player) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this)) return;
@@ -49,7 +54,22 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
         removeIfHitWall = Cloudy.config.getBoolean("Steam.Combo.FogRun.RemoveIfHitWall");
         endFade = Cloudy.config.getBoolean("Steam.Combo.FogRun.EndFade");
         oldEffects = Cloudy.config.getBoolean("Steam.Combo.FogRun.OldEffects");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.Combo.FogRun.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.Combo.FogRun.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.Combo.FogRun.BuffFactor");
 
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            duration *= (long) buffFactor;
+            flowDuration *= (long) buffFactor;
+            angle *= buffFactor;
+            speed *= buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            duration *= (long) buffFactor;
+            flowDuration *= (long) buffFactor;
+            angle *= buffFactor;
+            speed *= buffFactor;
+        }
 
 
         if (GeneralMethods.getBlocksAroundPoint(player.getLocation(), 2).stream()
@@ -77,6 +97,12 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
                 .isEmpty()) {
             bPlayer.addCooldown(this);
             remove();
+        }
+
+        Sounds.playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 0.5f, 1);
+
+        if (getRunningTicks() % 2 == 0) {
+            Sounds.playSound(player.getLocation(), Sound.ENTITY_ELDER_GUARDIAN_FLOP, 0.25f, 1.25f);
         }
 
 
@@ -271,5 +297,29 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
 
     public void setOldEffects(boolean oldEffects) {
         this.oldEffects = oldEffects;
+    }
+
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
     }
 }

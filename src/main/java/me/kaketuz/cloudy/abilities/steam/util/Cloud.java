@@ -9,7 +9,9 @@ import com.projectkorra.projectkorra.firebending.FireBlast;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.kaketuz.cloudy.Cloudy;
+import me.kaketuz.cloudy.abilities.steam.CloudCushion;
 import me.kaketuz.cloudy.abilities.steam.Evaporate;
+import me.kaketuz.cloudy.abilities.steam.combos.FollowingSteams;
 import me.kaketuz.cloudy.util.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -44,7 +46,7 @@ public class Cloud extends BukkitRunnable implements Trackable {
     private final long fireBuffDuration;
     private final double damage;
     private final double damageBuffed;
-    private final Location location;
+    private Location location;
 
     private final SplittableRandom random;
 
@@ -69,6 +71,8 @@ public class Cloud extends BukkitRunnable implements Trackable {
     private double velocity;
 
     private int snowVarHeight;
+
+    private boolean used;
 
 
     private Player owner;
@@ -116,6 +120,8 @@ public class Cloud extends BukkitRunnable implements Trackable {
         if (!hide) {
             Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.2f, 0.75f);
         }
+
+
 
         if (location.getBlockY() >= snowVarHeight || Methods.getTemperature(location) <= 0 && snowVariable) {
 
@@ -179,14 +185,7 @@ public class Cloud extends BukkitRunnable implements Trackable {
             if (System.currentTimeMillis() > startAfterFireTiming + fireBuffDuration) isAfterFire = false;
         }
         if (!hide) {
-            if (!isAfterFire) {
-                for (int i = 0; i < particleAmount; i++) {
-                    Vector rv = Methods.getRandom().multiply(ThreadLocalRandom.current().nextDouble(0, collisionRadius));
-                    Vector d = location.getDirection();
-                    Particles.spawnParticle(Particle.CLOUD, location.clone().add(rv), 0, d.getX(), d.getX(), d.getX(), d.length());
-                }
-            }
-            else Particles.spawnParticle(Particle.CLOUD, location, particleAmount, 0.5, 0.5, 0.5, 0.08);
+             Particles.spawnParticle(Particle.CLOUD, location, particleAmount, 0.5, 0.5, 0.5, isAfterFire? 0.08 : 0.01);
         }
 
 
@@ -416,5 +415,97 @@ public class Cloud extends BukkitRunnable implements Trackable {
 
     public double getVelocity() {
         return velocity;
+    }
+
+    public boolean isHidden() {
+        return hide;
+    }
+
+    public double getCollisionRadius() {
+        return collisionRadius;
+    }
+
+    public double getDamage() {
+        return damage;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public double getAmbientMovementSpeed() {
+        return ambientMovementSpeed;
+    }
+
+    public double getDamageBuffed() {
+        return damageBuffed;
+    }
+
+    public int getParticleAmount() {
+        return particleAmount;
+    }
+
+    public long getFireBuffDuration() {
+        return fireBuffDuration;
+    }
+
+    public Set<LocationVelocityTracker> getTrackers() {
+        return trackers;
+    }
+
+    public static Set<TempBlock> getLakes() {
+        return lakes;
+    }
+
+    public int getSnowVarHeight() {
+        return snowVarHeight;
+    }
+
+    public Vector getAmbientDir() {
+        return ambientDir;
+    }
+
+    public LocationVelocityTracker getFormTracker() {
+        return formTracker;
+    }
+
+    public boolean isSnowVariable() {
+        return snowVariable;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public void setAfterFire(boolean afterFire) {
+        isAfterFire = afterFire;
+    }
+
+    public void setHide(boolean hide) {
+        this.hide = hide;
+    }
+
+    public void setSnowVarHeight(int snowVarHeight) {
+        this.snowVarHeight = snowVarHeight;
+    }
+
+    public boolean isUsing() {
+        return used;
+    }
+
+    public void setUse(boolean used) {
+        this.used = used;
+    }
+
+    public long getStartAfterFireTiming() {
+        return startAfterFireTiming;
+    }
+
+    public void setStartAfterFireTiming(long startAfterFireTiming) {
+        this.startAfterFireTiming = startAfterFireTiming;
+    }
+
+    public void teleportTo(Location location) {
+        this.location = location;
     }
 }

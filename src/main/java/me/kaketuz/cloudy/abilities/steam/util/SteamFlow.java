@@ -133,7 +133,7 @@ public class SteamFlow extends BukkitRunnable {
             if (GeneralMethods.isSolid(location.getBlock())) cancel();
 
             GeneralMethods.getEntitiesAroundPoint(location, 0.4).forEach(e -> {
-                e.setVelocity(direction.clone().multiply(power));
+                if (power != 0) e.setVelocity(direction.clone().multiply(power));
             });
 
             RayTraceResult result = Objects.requireNonNull(location.getWorld()).rayTraceBlocks(location, direction, speed * 2, FluidCollisionMode.ALWAYS, true);

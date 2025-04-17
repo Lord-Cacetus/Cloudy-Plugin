@@ -102,7 +102,7 @@ public class CloudStreamGeyser extends SteamAbility implements AddonAbility, Com
             }
         }
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 20; i++) {
             Vector rv = Methods.getRandom().multiply(ThreadLocalRandom.current().nextDouble(0, collisionRadius));
             Particles.spawnParticle(Particle.CLOUD, location.clone().add(rv), 0, rv.getX(), rv.getY() + 1, rv.getZ(), 0.3);
         }
@@ -226,4 +226,5 @@ public class CloudStreamGeyser extends SteamAbility implements AddonAbility, Com
     public void setUppercutPower(double uppercutPower) {
         this.uppercutPower = uppercutPower;
     }
+
 }

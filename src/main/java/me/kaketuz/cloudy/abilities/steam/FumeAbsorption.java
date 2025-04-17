@@ -41,6 +41,9 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
 
     private boolean isInstant;
 
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
     public FumeAbsorption(Player player, boolean instant) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, FumeAbsorption.class)) return;
@@ -55,8 +58,30 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
         sourceRange = Cloudy.config.getDouble("Steam.FumeAbsorption.SourceRadius");
         cooldown = Cloudy.config.getLong("Steam.FumeAbsorption.Cooldown");
         randomDirections = Cloudy.config.getBoolean("Steam.FumeAbsorption.RandomDirections");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.FumeAbsorption.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.FumeAbsorption.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.FumeAbsorption.BuffFactor");
 
         this.isInstant = instant;
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            maxClouds *= (int) buffFactor;
+            streamsMultiplier *= (int) buffFactor;
+            minRange *= buffFactor;
+            speed *= buffFactor;
+            sourceRange *= buffFactor;
+            damage *= (int) buffFactor;
+            followSpeed *= (long) buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            maxClouds *= (int) buffFactor;
+            streamsMultiplier *= (int) buffFactor;
+            minRange *= buffFactor;
+            speed *= buffFactor;
+            sourceRange *= buffFactor;
+            damage *= (int) buffFactor;
+            followSpeed *= (long) buffFactor;
+        }
 
         if (!instant) {
 
@@ -65,7 +90,7 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
             if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRange).isEmpty()) return;
 
             for (Cloud c : Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRange)) {
-                if (!FollowingSteams.isCloudInFollowingCouples(c) && !Objects.equals(c.getOwner(), player)) continue;
+                if (c.isUsing() || c.isHidden()) continue;
                 clouds.add(c);
                 c.setOwner(player);
                 count++;
@@ -75,7 +100,10 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
 
             if (hasAbility(player, FastSwim.class)) getAbility(player, FastSwim.class).remove();
 
-            clouds.forEach(c -> c.setOwner(player));
+            clouds.forEach(c -> {
+                c.setOwner(player);
+                c.setUse(true);
+            });
         }
         else {
             if (!hasAbility(player, FollowingSteams.class)) return;
@@ -143,7 +171,10 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
                 new Stream(loc, minRange + ready.size() * streamsMultiplier, speed, damage, knockback, new Vector(x, 0, z).multiply(speed));
             }
         }
-        clouds.forEach(c -> c.remove(true));
+        clouds.forEach(c -> {
+            c.remove(true);
+            c.setUse(false);
+        });
         super.remove();
     }
 
@@ -347,5 +378,25 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
 
     public void setRandomDirections(boolean randomDirections) {
         this.randomDirections = randomDirections;
+    }
+
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
     }
 }

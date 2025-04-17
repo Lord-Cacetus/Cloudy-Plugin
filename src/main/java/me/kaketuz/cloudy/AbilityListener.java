@@ -1,14 +1,21 @@
 package me.kaketuz.cloudy;
 
 import com.projectkorra.projectkorra.BendingPlayer;
+import com.projectkorra.projectkorra.Element;
+import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.ability.ElementalAbility;
+import com.projectkorra.projectkorra.event.AbilityEndEvent;
 import com.projectkorra.projectkorra.event.BendingReloadEvent;
 import me.kaketuz.cloudy.abilities.steam.*;
 import me.kaketuz.cloudy.abilities.steam.combos.CoupleIcicles;
 import me.kaketuz.cloudy.abilities.steam.combos.FollowingSteams;
+import me.kaketuz.cloudy.abilities.steam.passives.ThermalTheft;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
 import me.kaketuz.cloudy.abilities.steam.util.CloudStreamGeyser;
+import me.kaketuz.cloudy.abilities.sub.SteamAbility;
 import me.kaketuz.cloudy.util.GradientAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,6 +49,7 @@ public class AbilityListener implements Listener {
                 case "FUMEABSORPTION" -> new FumeAbsorption(player, false);
                 case "VAPORBOMB" -> new VaporBomb(player, false);
                 case "CLOUDCUSHION" -> new CloudCushion(player, false);
+                case "CLOUDFISSION" -> new CloudFission(player);
             }
         }
     }
@@ -95,6 +103,12 @@ public class AbilityListener implements Listener {
         if (CoreAbility.hasAbility(player, CoupleIcicles.class)) {
             CoreAbility.getAbility(player, CoupleIcicles.class).shot();
         }
+        if (CoreAbility.hasAbility(player, CloudCushion.class)) {
+            CloudCushion c = CoreAbility.getAbility(player, CloudCushion.class);
+            if (c.isLaunched() && System.currentTimeMillis() > c.getStartLaunchingTiming() + 100) {
+                c.explode(bPlayer.getBoundAbilityName().equalsIgnoreCase("CloudFission"));
+            }
+        }
     }
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBendingReload(BendingReloadEvent event) {
@@ -112,5 +126,28 @@ public class AbilityListener implements Listener {
 
     public static void registerListener() {
         Cloudy.plugin.getServer().getPluginManager().registerEvents(new AbilityListener(), Cloudy.plugin);
+    }
+
+    @EventHandler
+    public void onAbilityRemove(AbilityEndEvent event) {
+        if (event.getAbility().getElement() != Element.FIRE) return;
+
+        if (!CoreAbility.getAbility(ThermalTheft.class).isEnabled()) return;
+
+        if (event.getAbility().getLocation() != null) {
+
+            if (GeneralMethods.getBlocksAroundPoint(event.getAbility().getLocation(), 3).stream().anyMatch(ElementalAbility::isWater)) {
+
+                Bukkit.getOnlinePlayers().forEach(p -> {
+                    BendingPlayer bP = BendingPlayer.getBendingPlayer(p);
+
+                    double rad = Cloudy.config.getDouble("Steam.Passives.ThermalTheft.Radius");
+
+                    if (bP != null && p.getLocation().distance(event.getAbility().getLocation()) <= rad) {
+                        if (bP.canUseSubElement(SteamAbility.STEAM)) new ThermalTheft(p, event.getAbility().getLocation());
+                    }
+                });
+            }
+        }
     }
 }

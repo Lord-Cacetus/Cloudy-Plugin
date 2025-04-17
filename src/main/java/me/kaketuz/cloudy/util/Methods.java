@@ -138,4 +138,8 @@ public class Methods {
     public static boolean chanceConcurrent(double percent) {
         return ThreadLocalRandom.current().nextDouble(0, 100) <= percent;
     }
+
+    public static Biome getBiome(Location location) {
+        return location.getBlock().getBiome();
+    }
 }

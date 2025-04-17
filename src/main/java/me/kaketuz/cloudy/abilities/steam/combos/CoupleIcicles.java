@@ -54,6 +54,9 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
     private final ConcurrentHashMap<Cloud, AtomicBoolean> clouds = new ConcurrentHashMap<>();
 
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
     public CoupleIcicles(Player player) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, CoupleIcicles.class)) return;
@@ -73,6 +76,29 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         displayVar = Cloudy.config.getBoolean("Steam.Combo.CoupleIcicles.DisplayVariation");
         allowNoDamageTicks = Cloudy.config.getBoolean("Steam.Combo.CoupleIcicles.AllowNoDamageTicks");
         message = Cloudy.config.getString("Steam.Combo.CoupleIcicles.Message");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.Combo.CoupleIcicles.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.Combo.CoupleIcicles.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.Combo.CoupleIcicles.BuffFactor");
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            sourceRadius *= buffFactor;
+            shotsPerCloudsAmount *= buffFactor;
+            range *= buffFactor;
+            speed *= buffFactor;
+            ringRadius *= buffFactor;
+            ringSpeed *= buffFactor;
+            followSpeed *= buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            sourceRadius *= buffFactor;
+            shotsPerCloudsAmount *= buffFactor;
+            range *= buffFactor;
+            speed *= buffFactor;
+            ringRadius *= buffFactor;
+            ringSpeed *= buffFactor;
+            followSpeed *= buffFactor;
+        }
+
         int count = 0;
 
         if (hasAbility(player, SteamControl.class)) getAbility(player, SteamControl.class).remove();
@@ -80,7 +106,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
 
         for (Cloud c : Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius)) {
-            if (FollowingSteams.isCloudInFollowingCouples(c)) {
+            if (!c.isUsing() && !c.isHidden()) {
 
                 if (c.getOwner() != null && !c.getOwner().equals(player)) continue;
             }
@@ -576,4 +602,44 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         this.speed = speed;
     }
 
+    @Override
+    public double getCollisionRadius() {
+        return collisionRadius;
+    }
+
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public void setCollisionRadius(double collisionRadius) {
+        this.collisionRadius = collisionRadius;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
+    }
+
+    public boolean isFlag() {
+        return flag;
+    }
 }

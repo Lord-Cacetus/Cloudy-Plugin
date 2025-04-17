@@ -22,6 +22,8 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Transformation;
@@ -50,10 +52,17 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
 
     private boolean canBreakPlants, forcedBreak;
 
-    private double growChance;
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
+    private boolean rain;
+    private int plantsGrowChance, regenLevel, regenDuration;
+    private boolean canRegen, canGrow;
 
 
-    public GloomyHails(Player player) {
+
+
+    public GloomyHails(Player player, boolean rain) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, GloomyHails.class)) return;
 
@@ -71,14 +80,42 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
         hailHeight = (float) Cloudy.config.getDouble("Steam.Combo.GloomyHails.HailHeight");
         canBreakPlants = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.CanBreakPlants");
         forcedBreak = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.ForcedBreak");
-
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.Combo.GloomyHails.BuffFactor");
+        canGrow = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.CanGrowPlants");
+        canRegen = Cloudy.config.getBoolean("Steam.Combo.GloomyHails.CanRegen");
+        plantsGrowChance = Cloudy.config.getInt("Steam.Combo.GloomyHails.PlantsGrowChance");
+        regenDuration = Cloudy.config.getInt("Steam.Combo.GloomyHails.RegenDuration");
+        regenLevel = Cloudy.config.getInt("Steam.Combo.GloomyHails.RegenLevel");
 
         int count = 0;
+
+        this.rain = rain;
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            duration *= (long) buffFactor;
+            maxClouds *= (int) buffFactor;
+            radius *=  buffFactor;
+            hailSpeed *= buffFactor;
+            sourceRadius *= buffFactor;
+            spawnHailChance *= buffFactor;
+            speed *= buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            duration *= (long) buffFactor;
+            maxClouds *= (int) buffFactor;
+            radius *=  buffFactor;
+            hailSpeed *= buffFactor;
+            sourceRadius *= buffFactor;
+            spawnHailChance *= buffFactor;
+            speed *= buffFactor;
+        }
 
         if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
 
         for (Cloud c : Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius)) {
-            if (!FollowingSteams.isCloudInFollowingCouples(c) && !Objects.equals(c.getOwner(), player)) continue;
+            if (c.isHidden() || c.isUsing()) continue;
             locations.add(c.getLocation());
             c.remove(true);
             count++;
@@ -109,7 +146,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
                     .filter(GeneralMethods::isSolid)
                     .ifPresent(b -> locations.remove(l));
 
-            if (ThreadLocalRandom.current().nextDouble() < spawnHailChance) new Hail();
+            if (ThreadLocalRandom.current().nextDouble() < spawnHailChance) new Precipitation();
         });
 
         if (System.currentTimeMillis() > getStartTime() + duration) {
@@ -166,7 +203,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
 
     @Override
     public Object createNewComboInstance(Player player) {
-        return new GloomyHails(player);
+        return new GloomyHails(player, false);
     }
 
     @Override
@@ -180,14 +217,14 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
     }
 
 
-    private class Hail extends BukkitRunnable {
+    private class Precipitation extends BukkitRunnable {
 
         private Location location;
         private Location origin;
         private Vector direction;
         private ItemDisplay icicle;
 
-        public Hail() {
+        public Precipitation() {
             if (locations.isEmpty()) return;
             origin = locations.get(ThreadLocalRandom.current().nextInt(0, locations.size()))
                     .clone()
@@ -196,7 +233,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
             location = origin.clone();
             direction = new Vector(0, -1, 0).multiply(hailSpeed);
 
-            if (displayVar) {
+            if (displayVar && !rain) {
                 icicle = (ItemDisplay) origin.getWorld().spawnEntity(origin.clone(), EntityType.ITEM_DISPLAY);
                 icicle.setItemStack(new ItemStack(Material.ICE));
                 Transformation t = icicle.getTransformation();
@@ -214,7 +251,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
 
             location = location.add(direction);
 
-            if (canBreakPlants) {
+            if (canBreakPlants && !rain) {
                 GeneralMethods.getBlocksAroundPoint(location, 1).stream()
                         .filter(b -> b.getBlockData() instanceof Ageable)
                         .forEach(b -> {
@@ -222,6 +259,19 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
                             else b.breakNaturally();
                         });
             }
+            if (canGrow && rain) {
+                GeneralMethods.getBlocksAroundPoint(location, 1).stream()
+                        .filter(b -> b.getBlockData() instanceof Ageable)
+                        .forEach(b -> {
+                            if (Methods.chance(plantsGrowChance)) {
+                                Ageable a = (Ageable) b.getBlockData();
+                                a.setAge(Math.min(a.getAge() + 1, a.getMaximumAge()));
+                                b.setBlockData(a);
+                            }
+                        });
+            }
+
+            if (rain) Sounds.playSound(location, Sound.WEATHER_RAIN_ABOVE, 0.05f, 1);
 
 
             RayTraceResult result = Objects.requireNonNull(location.getWorld()).rayTraceBlocks(location, direction, hailSpeed / 2, FluidCollisionMode.ALWAYS, true);
@@ -231,20 +281,33 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
                     .filter(GeneralMethods::isSolid)
                     .ifPresent(b -> cancel());
 
-            if (!displayVar) {
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
-                new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
+            if (rain) {
+                Particles.spawnParticle(Particle.FALLING_WATER, location, 1, 0, 0, 0, 0);
             }
-            else {
+
+            if (!displayVar) {
+                if (!rain) {
+                    Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
+                    new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
+                }
+            }
+            else if (!rain){
                 icicle.setTeleportDuration(1);
                 icicle.teleport(location);
             }
             GeneralMethods.getEntitiesAroundPoint(location, collisionRadius).stream()
-                    .filter(e -> e instanceof LivingEntity && !e.getUniqueId().equals(player.getUniqueId()))
+                    .filter(e -> e instanceof LivingEntity)
                     .forEach(e -> {
-                        DamageHandler.damageEntity(e, player, damage, GloomyHails.this);
-                        e.setFreezeTicks(10);
-                        cancel();
+                        if (!rain) {
+                            if (!e.getUniqueId().equals(player.getUniqueId())) {
+                                DamageHandler.damageEntity(e, player, damage, GloomyHails.this);
+                                e.setFreezeTicks(10);
+                                cancel();
+                            }
+                        }
+                        else if (canRegen) {
+                            ((LivingEntity) e).addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, regenDuration, regenLevel - 1, true, false, false));
+                        }
                     });
 
         }
@@ -252,8 +315,8 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
         @Override
         public synchronized void cancel() throws IllegalStateException {
             super.cancel();
-            Sounds.playSound(location, Sound.BLOCK_GLASS_BREAK, 0.5f, 1.4f);
-            if (displayVar) {
+            if (!rain) Sounds.playSound(location, Sound.BLOCK_GLASS_BREAK, 0.5f, 1.4f);
+            if (displayVar && !rain) {
                 Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(icicle.getItemStack()).getType().createBlockData());
                 icicle.remove();
 
@@ -262,12 +325,12 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
     }
     @Override
     public String getDescription() {
-        return Cloudy.config.getString("Steam.Combo.GloomyHails.Description");
+        return Cloudy.config.getString("Steam.Combo.GloomyHails.Description") + "\n\n GloomyRains: " + Cloudy.config.getString("Steam.Combo.GloomyRains.Description");
     }
 
     @Override
     public String getInstructions() {
-        return Cloudy.config.getString("Steam.Combo.GloomyHails.Instructions");
+        return Cloudy.config.getString("Steam.Combo.GloomyHails.Instructions") + "\n\n GloomyRains: " + Cloudy.config.getString("Steam.Combo.GloomyRains.Instructions");
     }
 
     public int getMaxClouds() {
@@ -381,5 +444,77 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
 
     public void setForcedBreak(boolean forcedBreak) {
         this.forcedBreak = forcedBreak;
+    }
+
+    public boolean isRain() {
+        return rain;
+    }
+
+    public void setRain(boolean rain) {
+        this.rain = rain;
+    }
+
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public int getPlantsGrowChance() {
+        return plantsGrowChance;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
+
+    public int getRegenDuration() {
+        return regenDuration;
+    }
+
+    public int getRegenLevel() {
+        return regenLevel;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public void setCanGrow(boolean canGrow) {
+        this.canGrow = canGrow;
+    }
+
+    public void setCanRegen(boolean canRegen) {
+        this.canRegen = canRegen;
+    }
+
+    public void setPlantsGrowChance(int plantsGrowChance) {
+        this.plantsGrowChance = plantsGrowChance;
+    }
+
+    public void setRegenDuration(int regenDuration) {
+        this.regenDuration = regenDuration;
+    }
+
+    public void setRegenLevel(int regenLevel) {
+        this.regenLevel = regenLevel;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
+    }
+
+    public boolean isCanGrow() {
+        return canGrow;
+    }
+
+    public boolean isCanRegen() {
+        return canRegen;
     }
 }

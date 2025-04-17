@@ -35,6 +35,9 @@ public class VaporBomb extends SteamAbility implements AddonAbility {
     private Location origin, location;
     private Vector direction;
 
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
 
     public VaporBomb(Player player, boolean instant) {
         super(player);
@@ -57,7 +60,26 @@ public class VaporBomb extends SteamAbility implements AddonAbility {
         blindnessDuration = Cloudy.config.getLong("Steam.VaporBomb.BlindnessDuration");
         mistSegmentsAmount = Cloudy.config.getInt("Steam.VaporBomb.MistSegmentsAmount");
         canHidePlayer = Cloudy.config.getBoolean("Steam.VaporBomb.CanPlayerHide");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.VaporBomb.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.VaporBomb.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.VaporBomb.BuffFactor");
 
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            speed *= (int) buffFactor;
+            damage *= (int) buffFactor;
+            knockback *= buffFactor;
+            sourceRange *= buffFactor;
+            mistDuration *= (long) buffFactor;
+            mistSegmentsAmount *= (long) buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            speed *= (int) buffFactor;
+            damage *= (int) buffFactor;
+            knockback *= buffFactor;
+            sourceRange *= buffFactor;
+            mistDuration *= (long) buffFactor;
+            mistSegmentsAmount *= (long) buffFactor;
+        }
 
         if (!instant) {
 
@@ -371,4 +393,27 @@ public class VaporBomb extends SteamAbility implements AddonAbility {
         this.mistSegmentsAmount = mistSegmentsAmount;
     }
 
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
 }

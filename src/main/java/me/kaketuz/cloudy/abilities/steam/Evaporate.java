@@ -29,6 +29,8 @@ public class Evaporate extends SteamAbility implements AddonAbility {
 
     private long cooldown;
     private double sourceRange;
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
 
     public Evaporate(Player player) {
         super(player);
@@ -37,6 +39,16 @@ public class Evaporate extends SteamAbility implements AddonAbility {
 
         cooldown = Cloudy.config.getLong("Steam.Evaporate.Cooldown");
         sourceRange = Cloudy.config.getDouble("Steam.Evaporate.SourceRange");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.Evaporate.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.Evaporate.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.Evaporate.BuffFactor");
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            sourceRange *= buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            sourceRange *= buffFactor;
+        }
 
         Block pLoc = player.getLocation().getBlock().getRelative(BlockFace.DOWN, 1);
         boolean onClouds = false;
@@ -72,6 +84,7 @@ public class Evaporate extends SteamAbility implements AddonAbility {
             Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BUBBLE") : Particle.WATER_BUBBLE, source.getLocation(), 20, 0.5, 0.5, 0.5, 0.1);
             Sounds.playSound(source.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_UPWARDS_AMBIENT, 0.3f, 2f);
             Sounds.playSound(source.getLocation(), Sound.ENTITY_BOAT_PADDLE_WATER, 0.5f, 0f);
+            Sounds.playSound(source.getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 0.25f, 1);
 
             Methods.removeWaterFromCauldron(source); //Nothing happens if source isn't water cauldron
             Methods.drySponge(source); //Same :3

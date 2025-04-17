@@ -29,7 +29,8 @@ public class CloudStream extends SteamAbility implements AddonAbility {
     private Location origin, location;
     private Vector direction;
 
-
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
 
     public CloudStream(Player player, boolean instant) {
         super(player);
@@ -43,6 +44,28 @@ public class CloudStream extends SteamAbility implements AddonAbility {
         cooldown = Cloudy.config.getLong("Steam.CloudStream.Cooldown");
         flowAmount = Cloudy.config.getInt("Steam.CloudStream.FlowAmount");
         flowDuration = Cloudy.config.getLong("Steam.CloudStream.FlowDuration");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.CloudFission.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.CloudFission.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.CloudFission.BuffFactor");
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            radius *= buffFactor;
+            pushPower *= buffFactor;
+            range *= buffFactor;
+            speed *= buffFactor;
+            sourceRange *= buffFactor;
+            flowAmount *= (int) buffFactor;
+            flowDuration *= (long) buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            radius *= buffFactor;
+            pushPower *= buffFactor;
+            range *= buffFactor;
+            speed *= buffFactor;
+            sourceRange *= buffFactor;
+            flowAmount *= (int) buffFactor;
+            flowDuration *= (long) buffFactor;
+        }
 
         if (!instant) {
             Block b = Methods.getLookingAt(player, sourceRange, false);
@@ -160,11 +183,11 @@ public class CloudStream extends SteamAbility implements AddonAbility {
 
     @Override
     public String getDescription() {
-        return Cloudy.config.getString("Steam.CloudStream.Description");
+        return Cloudy.config.getString("Steam.CloudStream.Description") + "\n\n Geyser: " + Cloudy.config.getString("Steam.CloudStream.Geyser.Description");
     }
     @Override
     public String getInstructions() {
-        return Cloudy.config.getString("Steam.CloudStream.Instructions");
+        return Cloudy.config.getString("Steam.CloudStream.Instructions") + "\n\n Geyser: " + Cloudy.config.getString("Steam.CloudStream.Geyser.Instructions");
     }
 
     public void setRange(double range) {
@@ -249,5 +272,29 @@ public class CloudStream extends SteamAbility implements AddonAbility {
 
     public void setSourceRange(double sourceRange) {
         this.sourceRange = sourceRange;
+    }
+
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
     }
 }

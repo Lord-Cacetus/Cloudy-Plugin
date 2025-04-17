@@ -41,6 +41,9 @@ public class SteamControl extends SteamAbility implements AddonAbility {
 
     private boolean threwOnce;
 
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
     public SteamControl(Player player, boolean followSteams) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, SteamControl.class)) return;
@@ -53,6 +56,26 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         additionalLiveTime = Cloudy.config.getLong("Steam.SteamControl.AdditionalLiveTime");
         removeAfterThrow = Cloudy.config.getBoolean("Steam.SteamControl.RemoveAfterThrow");
         cooldown = Cloudy.config.getLong("Steam.SteamControl.Cooldown");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.SteamControl.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.SteamControl.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.SteamControl.BuffFactor");
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            maxClouds *= (int) buffFactor;
+            throwSpeed *= (int) buffFactor;
+            followSpeed *= buffFactor;
+            endBurstPower *= buffFactor;
+            additionalLiveTime *= (long) buffFactor;
+            followSpeed *= (long) buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            maxClouds *= (int) buffFactor;
+            throwSpeed *= (int) buffFactor;
+            followSpeed *= buffFactor;
+            endBurstPower *= buffFactor;
+            additionalLiveTime *= (long) buffFactor;
+            followSpeed *= (long) buffFactor;
+        }
 
         if (!followSteams) {
 
@@ -62,13 +85,16 @@ public class SteamControl extends SteamAbility implements AddonAbility {
             if (Cloud.getCloudsAroundPoint(targ, sourceRadius).isEmpty()) return;
 
             for (Cloud c : Cloud.getCloudsAroundPoint(targ, sourceRadius)) {
-                if (!FollowingSteams.isCloudInFollowingCouples(c) && !Objects.equals(c.getOwner(), player)) continue;
+                if (c.isUsing() || c.isHidden()) continue;
                 clouds.add(c);
                 count++;
                 if (count >= maxClouds) break;
             }
-            clouds.forEach(c -> c.addLivetime(additionalLiveTime));
-            clouds.forEach(c -> c.setOwner(player));
+            clouds.forEach(c -> {
+                c.setUse(true);
+                c.addLivetime(additionalLiveTime);
+                c.setOwner(player);
+            } );
 
             readyClouds = new ConcurrentHashMap<>(clouds.size());
 
@@ -116,6 +142,8 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         });
 
 
+
+
         if (clouds.isEmpty()) {
             bPlayer.addCooldown(this);
             remove();
@@ -126,8 +154,13 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         }
 
         if (!bPlayer.getBoundAbilityName().equals(getName())) {
-            bPlayer.addCooldown(this);
-            remove();
+            if (bPlayer.getBoundAbilityName().equalsIgnoreCase("CloudFission")) {
+                new CloudFission(player, clouds);
+            }
+            else {
+                bPlayer.addCooldown(this);
+                remove();
+            }
         }
     }
 
@@ -157,8 +190,12 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         super.remove();
         if (!readyClouds.isEmpty() && threwOnce) {
             Particles.spawnParticle(Particle.CLOUD, target, 30, 0, 0, 0, 0.8);
-            clouds.forEach(c -> c.setVelocity(Methods.getRandom().normalize().multiply(endBurstPower)));
+            clouds.forEach(c -> {
+                c.setVelocity(Methods.getRandom().normalize().multiply(endBurstPower));
+                c.setUse(false);
+            });
         }
+        clouds.forEach(c -> c.setUse(false));
     }
 
     @Override
@@ -301,4 +338,31 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         this.threwOnce = threwOnce;
     }
 
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+    @Deprecated
+    public void setReadyClouds(ConcurrentHashMap<Cloud, AtomicBoolean> readyClouds) {
+        this.readyClouds = readyClouds;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
+    }
 }

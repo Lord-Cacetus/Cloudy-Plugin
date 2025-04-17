@@ -1,16 +1,22 @@
 package me.kaketuz.cloudy;
 
+import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.Ability;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import me.kaketuz.cloudy.abilities.steam.passives.Condensation;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
 import me.kaketuz.cloudy.abilities.sub.SteamAbility;
 import me.kaketuz.cloudy.commands.ReloadCommand;
 import me.kaketuz.cloudy.util.GradientAPI;
+import me.kaketuz.cloudy.util.Methods;
 import me.kaketuz.cloudy.util.logger.ANSIValues;
 import me.kaketuz.cloudy.util.logger.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Optional;
 
 public final class Cloudy extends JavaPlugin {
 
@@ -38,7 +44,16 @@ public final class Cloudy extends JavaPlugin {
         Logger.sendCustom("Thanks for installing the Cloudy Plugin! The Developer is very grateful to you!!! <3", ANSIValues.PURPLE);
         Logger.sendSuccessfully("Cloudy plugin was successfully enabled!");
 
-
+//                Bukkit.getScheduler().runTaskTimer(this, () -> Bukkit.getOnlinePlayers().forEach(p -> {
+//            BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(p);
+//            Optional.ofNullable(bPlayer)
+//                    .filter(bp -> bp.canUseSubElement(SteamAbility.STEAM))
+//                    .ifPresent(bp -> {
+//                        if (Methods.getHumidity(p.getLocation()) >= 0.8) {
+//                            new Condensation(p);
+//                        }
+//                    });
+//        }), 0, 1L);
 
     }
 

@@ -48,6 +48,13 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
     private int moistureFactor;
     private double growChance;
 
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
+    private long startLaunchingTiming;
+
+
+
     public CloudCushion(Player player, boolean instant) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this)) return;
@@ -66,17 +73,44 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
         canGrowPlants = Cloudy.config.getBoolean("Steam.CloudCushion.CanGrowPlants");
         moistureFactor = Cloudy.config.getInt("Steam.CloudCushion.MoistureFactor");
         growChance = Cloudy.config.getDouble("Steam.CloudCushion.GrowChance");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.CloudCushion.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.CloudCushion.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.CloudCushion.BuffFactor");
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            sourceRadius *= buffFactor;
+            knockback *= buffFactor;
+            range *= buffFactor;
+            speed *= buffFactor;
+            duration *= (long) buffFactor;
+            speedBoost *= (int) buffFactor;
+            jumpBoost *= (int) buffFactor;
+            followSpeed *= buffFactor;
+            radius *= buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            sourceRadius *= buffFactor;
+            knockback *= buffFactor;
+            range *= buffFactor;
+            speed *= buffFactor;
+            duration *= (long) buffFactor;
+            speedBoost *= (int) buffFactor;
+            jumpBoost *= (int) buffFactor;
+            followSpeed *= buffFactor;
+            radius *= buffFactor;
+        }
+
         if (!instant) {
             if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
 
             if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).stream()
-                    .allMatch(c -> !FollowingSteams.isCloudInFollowingCouples(c) && !Objects.equals(c.getOwner(), player)))
-                return;
+                    .allMatch(c -> c.isUsing() || c.isHidden())) return;
 
             //Why not :/
             try {
                 cloud = Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).getLast();
                 cloud.setOwner(player);
+                cloud.setUse(true);
             } catch (Exception e) {
                 return;
             }
@@ -93,6 +127,7 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
 
     @Override
     public void progress() {
+
         if (!isLaunched) {
             cloud.move(GeneralMethods.getDirection(cloud.getLocation(), player.getEyeLocation()).normalize().multiply(followSpeed));
             if (player.getEyeLocation().distance(cloud.getLocation()) < 1.5) isReadyToLaunch = true;
@@ -100,6 +135,7 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
             if (!player.isSneaking() || !bPlayer.getBoundAbilityName().equals(getName()) || cloud.isCancelled()) remove();
         }
          if (!isCushion && isLaunched) {
+             cloud.teleportTo(location);
              Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.1f, 0.75f);
             location = location.add(direction);
             for (int i = 0; i < 6; i++) {
@@ -108,7 +144,7 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
             }
             if (origin.distance(location) >= range) {
                 Particles.spawnParticle(Particle.CLOUD, location, 50, 0, 0, 0, 0.5);
-                GeneralMethods.getEntitiesAroundPoint(location, 3)
+                GeneralMethods.getEntitiesAroundPoint(location, radius)
                         .forEach(e -> e.setVelocity(GeneralMethods.getDirection(location, e.getLocation()).normalize().multiply(knockback)));
                 remove();
             }
@@ -163,6 +199,12 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
         }
     }
 
+    @Override
+    public void remove() {
+        super.remove();
+        cloud.setUse(false);
+    }
+
     public void cushion(Location location) {
         isCushion = true;
 
@@ -175,13 +217,25 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
     }
 
     public void launch() {
+        if (isLaunched) return;
+        startLaunchingTiming = System.currentTimeMillis();
         bPlayer.addCooldown(this);
         origin = player.getEyeLocation();
         location = origin.clone();
         direction = player.getLocation().getDirection().multiply(speed);
-        if (cloud != null) cloud.remove(true);
         isLaunched = true;
         isReadyToLaunch = false;
+    }
+
+    public void explode(boolean fission) {
+        if (!fission) {
+            Particles.spawnParticle(Particle.CLOUD, location, 50, 0, 0, 0, 0.5);
+            GeneralMethods.getEntitiesAroundPoint(location, radius)
+                    .forEach(e -> e.setVelocity(GeneralMethods.getDirection(location, e.getLocation()).normalize().multiply(knockback)));
+        }
+        else new CloudFission(player, List.of(cloud));
+
+        remove();
     }
 
     @Override
@@ -388,4 +442,65 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
     public void setMoistureFactor(int moistureFactor) {
         this.moistureFactor = moistureFactor;
     }
+
+    public long getStartLaunchingTiming() {
+        return startLaunchingTiming;
+    }
+
+    public void setStartLaunchingTiming(long startLaunchingTiming) {
+        this.startLaunchingTiming = startLaunchingTiming;
+    }
+
+    public void setOrigin(Location origin) {
+        this.origin = origin;
+    }
+
+    public void setAffectOtherSteambenders(boolean affectOtherSteambenders) {
+        this.affectOtherSteambenders = affectOtherSteambenders;
+    }
+
+    public void setStartCushionTiming(long startCushionTiming) {
+        this.startCushionTiming = startCushionTiming;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+    @Deprecated
+    public void setCloud(Cloud cloud) {
+        this.cloud = cloud;
+    }
+
+    public void setGrowChance(double growChance) {
+        this.growChance = growChance;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public double getGrowChance() {
+        return growChance;
+    }
+
+    public boolean isAffectOtherSteambenders() {
+        return affectOtherSteambenders;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
+    }
+
 }

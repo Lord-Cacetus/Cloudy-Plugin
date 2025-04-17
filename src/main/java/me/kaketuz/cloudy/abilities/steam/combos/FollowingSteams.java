@@ -31,6 +31,10 @@ public class FollowingSteams extends SteamAbility implements AddonAbility, Combo
     private final List<Cloud> selectedClouds = new CopyOnWriteArrayList<>();
     private final List<Cloud> usableClouds = new CopyOnWriteArrayList<>();
 
+
+    private boolean coldBiomesBuff, nightBuff;
+    private double buffFactor;
+
     private boolean nonEmpty;
 
     public FollowingSteams(Player player) {
@@ -44,12 +48,32 @@ public class FollowingSteams extends SteamAbility implements AddonAbility, Combo
         knockback = Cloudy.config.getDouble("Steam.Combo.FollowingSteams.Knockback");
         followSpeed = Cloudy.config.getDouble("Steam.Combo.FollowingSteams.FollowSpeed");
         sourceRadius = Cloudy.config.getDouble("Steam.Combo.FollowingSteams.SourceRadius");
+        coldBiomesBuff = Cloudy.config.getBoolean("Steam.Combo.FollowingSteams.ColdBiomesBuff");
+        nightBuff = Cloudy.config.getBoolean("Steam.Combo.FollowingSteams.NightBuff");
+        buffFactor = Cloudy.config.getDouble("Steam.Combo.FollowingSteams.BuffFactor");
+
+        if (coldBiomesBuff && Methods.getTemperature(player.getLocation()) <= 0) {
+            duration *= (long) buffFactor;
+            maxClouds *= (int) buffFactor;
+            speedBoost *= (int) buffFactor;
+            followSpeed *= buffFactor;
+            sourceRadius *= buffFactor;
+        }
+        if (nightBuff && isNight(player.getWorld())) {
+            duration *= (long) buffFactor;
+            maxClouds *= (int) buffFactor;
+            speedBoost *= (int) buffFactor;
+            followSpeed *= buffFactor;
+            sourceRadius *= buffFactor;
+        }
 
         int count = 0;
 
         if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
 
         for (Cloud c : Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius)) {
+            if (c.isUsing() || c.isHidden()) continue;
+            c.setUse(true);
             c.setOwner(player);
             selectedClouds.add(c);
             count++;
@@ -108,6 +132,7 @@ public class FollowingSteams extends SteamAbility implements AddonAbility, Combo
     public void removeAllClouds() {
         usableClouds.forEach(c -> {
             c.remove(true);
+
             usableClouds.remove(c);
             selectedClouds.remove(c);
         });
@@ -123,7 +148,10 @@ public class FollowingSteams extends SteamAbility implements AddonAbility, Combo
         super.remove();
         if (!usableClouds.isEmpty()) {
             Particles.spawnParticle(Particle.CLOUD, player.getEyeLocation(), 30, 0, 0, 0, 0.8);
-            usableClouds.forEach(c -> c.setVelocity(Methods.getRandom()));
+            usableClouds.forEach(c -> {
+                c.setUse(false);
+                c.setVelocity(Methods.getRandom());
+            });
             GeneralMethods.getEntitiesAroundPoint(player.getEyeLocation(), knockback)
                     .forEach(e -> e.setVelocity(GeneralMethods.getDirection(player.getEyeLocation(), e.getLocation()).normalize().multiply(knockback)));
         }
@@ -249,5 +277,37 @@ public class FollowingSteams extends SteamAbility implements AddonAbility, Combo
 
     public void setSourceRadius(double sourceRadius) {
         this.sourceRadius = sourceRadius;
+    }
+
+    public double getBuffFactor() {
+        return buffFactor;
+    }
+
+    public boolean isNightBuff() {
+        return nightBuff;
+    }
+
+    public void setNightBuff(boolean nightBuff) {
+        this.nightBuff = nightBuff;
+    }
+
+    public void setColdBiomesBuff(boolean coldBiomesBuff) {
+        this.coldBiomesBuff = coldBiomesBuff;
+    }
+
+    public void setBuffFactor(double buffFactor) {
+        this.buffFactor = buffFactor;
+    }
+
+    public void setNonEmpty(boolean nonEmpty) {
+        this.nonEmpty = nonEmpty;
+    }
+
+    public boolean isColdBiomesBuff() {
+        return coldBiomesBuff;
+    }
+
+    public boolean isNonEmpty() {
+        return nonEmpty;
     }
 }
