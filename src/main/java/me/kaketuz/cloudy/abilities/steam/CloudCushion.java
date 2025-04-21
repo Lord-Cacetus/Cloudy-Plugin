@@ -59,6 +59,14 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this)) return;
 
+        for (CloudCushion c : getAbilities(CloudCushion.class)) {
+            if (!c.isRemoved() && c.cloud.getLocation().distance(player.getEyeLocation()) <= 5) {
+                c.remove();
+                this.cloud = c.cloud;
+                break;
+            }
+        }
+
         range = Cloudy.config.getDouble("Steam.CloudCushion.Range");
         speed = Cloudy.config.getDouble("Steam.CloudCushion.Speed");
         radius = Cloudy.config.getDouble("Steam.CloudCushion.Radius");
@@ -101,22 +109,26 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
         }
 
         if (!instant) {
-            if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
 
-            if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).stream()
-                    .allMatch(c -> c.isUsing() || c.isHidden())) return;
+            if (cloud == null) {
 
-            //Why not :/
-            try {
-                cloud = Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).getLast();
-                cloud.setOwner(player);
-                cloud.setUse(true);
-            } catch (Exception e) {
-                return;
+                if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).isEmpty()) return;
+
+                if (Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).stream()
+                        .allMatch(c -> c.isUsing() || c.isHidden())) return;
+
+                //Why not :/
+                try {
+                    cloud = Cloud.getCloudsAroundPoint(player.getEyeLocation(), sourceRadius).getLast();
+                    cloud.setOwner(player);
+                    cloud.setUse(true);
+                } catch (Exception e) {
+                    return;
+                }
+
+                if (cloud == null)
+                    return;
             }
-
-            if (cloud == null)
-                return;
 
             cloud.setOwner(this.player);
         }
@@ -135,7 +147,7 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
             if (!player.isSneaking() || !bPlayer.getBoundAbilityName().equals(getName()) || cloud.isCancelled()) remove();
         }
          if (!isCushion && isLaunched) {
-             cloud.teleportTo(location);
+             if (cloud != null) cloud.teleportTo(location);
              Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.1f, 0.75f);
             location = location.add(direction);
             for (int i = 0; i < 6; i++) {
@@ -202,7 +214,7 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
     @Override
     public void remove() {
         super.remove();
-        cloud.setUse(false);
+        if (cloud != null)  cloud.setUse(false);
     }
 
     public void cushion(Location location) {
@@ -233,7 +245,7 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
             GeneralMethods.getEntitiesAroundPoint(location, radius)
                     .forEach(e -> e.setVelocity(GeneralMethods.getDirection(location, e.getLocation()).normalize().multiply(knockback)));
         }
-        else new CloudFission(player, List.of(cloud));
+        else if (cloud != null) new CloudFission(player, List.of(cloud));
 
         remove();
     }

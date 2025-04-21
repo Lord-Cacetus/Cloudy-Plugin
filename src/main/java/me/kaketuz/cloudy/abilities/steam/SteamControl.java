@@ -48,6 +48,8 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, SteamControl.class)) return;
 
+
+
         maxClouds = Cloudy.config.getInt("Steam.SteamControl.MaxClouds");
         throwSpeed = Cloudy.config.getDouble("Steam.SteamControl.ThrowSpeed");
         followSpeed = Cloudy.config.getDouble("Steam.SteamControl.FollowSpeed");
@@ -85,7 +87,7 @@ public class SteamControl extends SteamAbility implements AddonAbility {
             if (Cloud.getCloudsAroundPoint(targ, sourceRadius).isEmpty()) return;
 
             for (Cloud c : Cloud.getCloudsAroundPoint(targ, sourceRadius)) {
-                if (c.isUsing() || c.isHidden()) continue;
+                if (c.isHidden()) continue;
                 clouds.add(c);
                 count++;
                 if (count >= maxClouds) break;
@@ -95,6 +97,16 @@ public class SteamControl extends SteamAbility implements AddonAbility {
                 c.addLivetime(additionalLiveTime);
                 c.setOwner(player);
             } );
+
+            getAbilities(SteamControl.class).forEach(s -> {
+                if (!s.player.equals(player)) {
+                    s.clouds.forEach(c2 -> {
+                        if (c2.getLocation().distance(player.getEyeLocation()) <= 5) {
+                            if (clouds.contains(c2)) s.clouds.remove(c2);
+                        }
+                    });
+                }
+            });
 
             readyClouds = new ConcurrentHashMap<>(clouds.size());
 

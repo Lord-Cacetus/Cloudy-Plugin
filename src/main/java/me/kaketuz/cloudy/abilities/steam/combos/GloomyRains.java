@@ -84,6 +84,6 @@ public class GloomyRains extends SteamAbility implements AddonAbility, ComboAbil
 
     @Override
     public boolean isEnabled() {
-        return Cloudy.config.getBoolean("Steam.Combo.GloomyRains.Enabled");
+        return Cloudy.config.getBoolean("Steam.Combo.GloomyHails.Rain.Enabled");
     }
 }

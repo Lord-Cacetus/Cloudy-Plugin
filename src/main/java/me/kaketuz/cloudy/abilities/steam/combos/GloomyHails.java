@@ -325,12 +325,12 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
     }
     @Override
     public String getDescription() {
-        return Cloudy.config.getString("Steam.Combo.GloomyHails.Description") + "\n\n GloomyRains: " + Cloudy.config.getString("Steam.Combo.GloomyRains.Description");
+        return Cloudy.config.getString("Steam.Combo.GloomyHails.Description") + "\n\n GloomyRains: " + Cloudy.config.getString("Steam.Combo.GloomyHails.Rain.Description");
     }
 
     @Override
     public String getInstructions() {
-        return Cloudy.config.getString("Steam.Combo.GloomyHails.Instructions") + "\n\n GloomyRains: " + Cloudy.config.getString("Steam.Combo.GloomyRains.Instructions");
+        return Cloudy.config.getString("Steam.Combo.GloomyHails.Instructions") + "\n\n GloomyRains: " + Cloudy.config.getString("Steam.Combo.GloomyHails.Rain.Instructions");
     }
 
     public int getMaxClouds() {
