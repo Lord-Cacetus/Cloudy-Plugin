@@ -2,6 +2,7 @@ package me.kaketuz.cloudy.util;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.util.Vector;
 
 import java.util.Objects;
 
@@ -20,6 +21,9 @@ public class Particles {
     }
     public static void spawnParticle(Particle particle, Location location, int amount) {
         Objects.requireNonNull(location.getWorld()).spawnParticle(particle, location, amount);
+    }
+    public static void spawnParticle(Particle particle, Location location, Vector dir, double speed) {
+        Objects.requireNonNull(location.getWorld()).spawnParticle(particle, location, 0, dir.getX(), dir.getY(), dir.getZ(), speed);
     }
 
     //A STEEVE

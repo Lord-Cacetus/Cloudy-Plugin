@@ -20,6 +20,11 @@ public class ReloadCommand implements TabExecutor {
         if (args.length != 1) return true;
 
         if (args[0].equalsIgnoreCase("reload")) {
+            if (!sender.isOp()) {
+                sender.sendMessage(GradientAPI.colorize("<#E7003E>ᴄʟᴏᴜᴅʏ | You don't have permission to do this!</#FF2C00>"));
+                return true;
+            }
+
             Cloud.getClouds().forEach(c -> c.remove(true));
 
 

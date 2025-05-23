@@ -1,5 +1,5 @@
 name: Cloudy
-version: 'v1.2.1'
+version: '1.3.0-BETA-1'
 main: me.kaketuz.cloudy.Cloudy
 api-version: '1.20'
 authors: [ Lord_Cacetus_ ]
@@ -11,3 +11,98 @@ commands:
     aliases:
       - cl
       - cldy
+permissions:
+  cloudy.commands:
+    default: op
+    description: Grants access to debug commands
+    children:
+      cloudy.commands.reload: true
+
+  cloudy.commands.reload:
+    default: false
+    description: Reload command for admins only
+
+  bending.steam:
+    default: not op
+    description: Grants access to all Steambending Abilities
+    children:
+      bending.steam.combos: true
+      bending.steam.passive: true
+      bending.ability.evaporate: true
+      bending.ability.steamcontrol: true
+      bending.ability.cloudcushion: true
+      bending.ability.cloudstream: true
+      bending.ability.fumeabsorption: true
+      bending.ability.vaporbomb: true
+      bending.ability.cloudfission: true
+      bending.ability.cloudstreamgeyser: true
+      bending.ability.coupleicicles: true
+      bending.ability.fogrun: true
+      bending.ability.followingsteams: true
+      bending.ability.gloomyhails: true
+      bending.ability.gloomyrains: true
+      bending.ability.thermaltheft: true
+
+  bending.steam.combos:
+    default: false
+    description: Grants access to Steam combos
+
+  bending.steam.passive:
+    default: false
+    description: Grants access to Steam passive abilities
+
+  bending.ability.evaporate:
+    default: false
+    description: Grants access to the Evaporate ability
+
+  bending.ability.steamcontrol:
+    default: false
+    description: Grants access to the SteamControl ability
+
+  bending.ability.cloudcushion:
+    default: false
+    description: Grants access to the CloudCushion ability
+
+  bending.ability.cloudstream:
+    default: false
+    description: Grants access to the CloudStream ability
+
+  bending.ability.fumeabsorption:
+    default: false
+    description: Grants access to the FumeAbsorption ability
+
+  bending.ability.vaporbomb:
+    default: false
+    description: Grants access to the VaporBomb ability
+
+  bending.ability.cloudfission:
+    default: false
+    description: Grants access to the CloudFission ability
+
+  bending.ability.cloudstreamgeyser:
+    default: false
+    description: Grants access to the CloudStreamGeyser ability
+
+  bending.ability.coupleicicles:
+    default: false
+    description: Grants access to the CoupleIcicles ability
+
+  bending.ability.fogrun:
+    default: false
+    description: Grants access to the FogRun ability
+
+  bending.ability.followingsteams:
+    default: false
+    description: Grants access to the FollowingSteams ability
+
+  bending.ability.gloomyhails:
+    default: false
+    description: Grants access to the GloomyHails ability
+
+  bending.ability.gloomyrains:
+    default: false
+    description: Grants access to the GloomyRains ability
+
+  bending.ability.thermaltheft:
+    default: false
+    description: Grants access to the ThermalTheft ability

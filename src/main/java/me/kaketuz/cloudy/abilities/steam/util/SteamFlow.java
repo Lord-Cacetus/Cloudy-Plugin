@@ -144,7 +144,7 @@ public class SteamFlow extends BukkitRunnable {
                         if (ElementalAbility.isWater(b)) {
                             hitGround = true;
                             isReturning = false;
-                            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BUBBLE") : Particle.WATER_BUBBLE, location, 10, 0.5, 0.5, 0.5, 0.1);
+                            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, location, 10, 0.5, 0.5, 0.5, 0.1);
                             reflect(b);
                         }
                         if (!ElementalAbility.isAir(b.getType())) {

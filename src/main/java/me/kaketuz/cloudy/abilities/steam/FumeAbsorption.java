@@ -5,6 +5,7 @@ import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.waterbending.passive.FastSwim;
 import me.kaketuz.cloudy.Cloudy;
+import me.kaketuz.cloudy.Configuration;
 import me.kaketuz.cloudy.abilities.steam.combos.FollowingSteams;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
 import me.kaketuz.cloudy.abilities.steam.util.SteamFlow;
@@ -14,12 +15,9 @@ import me.kaketuz.cloudy.util.Particles;
 import me.kaketuz.cloudy.util.Sounds;
 import org.bukkit.*;
 import org.bukkit.entity.*;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
-import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -47,6 +45,9 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
     public FumeAbsorption(Player player, boolean instant) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, FumeAbsorption.class)) return;
+
+
+
 
         maxClouds = Cloudy.config.getInt("Steam.FumeAbsorption.MaxClouds");
         streamsMultiplier = Cloudy.config.getInt("Steam.FumeAbsorption.StreamsMultiplier");
@@ -272,7 +273,7 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
                     .ifPresent(b -> {
                         if (GeneralMethods.isSolid(b)) cancel();
                         if (isWater(b)) {
-                            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BUBBLE") : Particle.WATER_BUBBLE, location, 20, 0.2, 0.2, 0.2, 0.08);
+                            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, location, 20, 0.2, 0.2, 0.2, 0.08);
                         }
                     });
         }

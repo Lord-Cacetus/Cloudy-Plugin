@@ -366,7 +366,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
             if (!displayVar) {
                 Particles.spawnParticle(Particle.SNOWFLAKE, location, 0, direction.getX(), direction.getY(), direction.getZ(), 0.2);
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
+                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
                 new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
             }
             else {
@@ -388,7 +388,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                     .map(RayTraceResult::getHitBlock)
                     .filter(GeneralMethods::isSolid)
                     .ifPresent(b -> {
-                        Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
+                        Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
                         cancel();
                     });
 
@@ -405,7 +405,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                     .forEach(e -> {
                         DamageHandler.damageEntity(e, player, damage, CoupleIcicles.this);
                         e.setFreezeTicks(15);
-                        Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
+                        Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
                         if (allowNoDamageTicks) ((LivingEntity)e).setNoDamageTicks(0);
                         cancel();
                     });
@@ -461,7 +461,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         public synchronized void cancel() throws IllegalStateException {
             super.cancel();
             Sounds.playSound(display.getLocation(), Sound.BLOCK_GLASS_BREAK, 1, 1);
-            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, display.getLocation(), 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(display.getItemStack()).getType().createBlockData());
+            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, display.getLocation(), 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(display.getItemStack()).getType().createBlockData());
             display.remove();
         }
     }

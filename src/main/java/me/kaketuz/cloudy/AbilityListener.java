@@ -8,6 +8,7 @@ import com.projectkorra.projectkorra.ability.ElementalAbility;
 import com.projectkorra.projectkorra.event.AbilityEndEvent;
 import com.projectkorra.projectkorra.event.BendingReloadEvent;
 import me.kaketuz.cloudy.abilities.steam.*;
+import me.kaketuz.cloudy.abilities.steam.avatarstate.ASVariation;
 import me.kaketuz.cloudy.abilities.steam.combos.CoupleIcicles;
 import me.kaketuz.cloudy.abilities.steam.combos.FollowingSteams;
 import me.kaketuz.cloudy.abilities.steam.passives.ThermalTheft;
@@ -20,7 +21,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.server.ServerLoadEvent;
@@ -100,6 +100,7 @@ public class AbilityListener implements Listener {
             }
         }
 
+
         if (CoreAbility.hasAbility(player, CoupleIcicles.class)) {
             CoreAbility.getAbility(player, CoupleIcicles.class).shot();
         }
@@ -109,6 +110,10 @@ public class AbilityListener implements Listener {
                 c.explode(bPlayer.getBoundAbilityName().equalsIgnoreCase("CloudFission"));
             }
         }
+
+
+
+
     }
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBendingReload(BendingReloadEvent event) {

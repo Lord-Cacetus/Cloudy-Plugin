@@ -100,7 +100,7 @@ public class Cloud extends BukkitRunnable implements Trackable {
         this.formTracker = new LocationVelocityTracker(location, new Vector(0, formSpeed, 0), this);
         this.random = new SplittableRandom();
         this.ambientDir = Methods.getRandom().setY(0).normalize().multiply(ambientMovementSpeed);
-        if (Methods.isNetherBiome(location)) return;
+        //if (Methods.isNetherBiome(location)) return;
 
 
 
@@ -112,13 +112,15 @@ public class Cloud extends BukkitRunnable implements Trackable {
 
     @Override
     public void run() {
-        if (Methods.getTemperature(location) >= 1 || Methods.getHumidity(location) <= 0.01) setAfterFire();
+       // if (Methods.getTemperature(location) >= 1 || Methods.getHumidity(location) <= 0.01) setAfterFire();
 
         if (owner != null) {
             if (owner.isDead() || !owner.isOnline()) owner = null;
         }
         if (!hide) {
-            Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.2f, 0.75f);
+            if (getCloudsAroundPoint(location, 10).size() < 5) {
+                Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.2f, 0.75f);
+            }
         }
 
 
@@ -127,27 +129,28 @@ public class Cloud extends BukkitRunnable implements Trackable {
 
             if (!hide) {
                 Particles.spawnParticle(Particle.SNOWFLAKE, location, particleAmount / 2, 0.5, 0.5, 0.5, 0);
-            }
 
-            Optional.ofNullable(Methods.getGround(location, 10))
-                    .ifPresent(b -> {
-                        if (ElementalAbility.isAir(b.getRelative(BlockFace.UP, 1).getType())) {
-                            if (random.nextInt(0, 100) < 20) {
-                                if (!hide && !ElementalAbility.isWater(b)) {
-                                    Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
-                                    b.getRelative(BlockFace.UP, 1).setType(Material.SNOW);
+
+                Optional.ofNullable(Methods.getGround(location, 10))
+                        .ifPresent(b -> {
+                            if (ElementalAbility.isAir(b.getRelative(BlockFace.UP, 1).getType())) {
+                                if (random.nextInt(0, 100) < 20) {
+                                    if (!hide && !ElementalAbility.isWater(b)) {
+                                        Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
+                                        b.getRelative(BlockFace.UP, 1).setType(Material.SNOW);
+                                    }
                                 }
                             }
-                        }
-                        if (b.getRelative(BlockFace.UP, 1).getType() == Material.SNOW) {
-                            if (random.nextInt(0, 100) < 10) {
-                                if (!hide) {
-                                    Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
-                                    Methods.addSnowLayer(b);
+                            if (b.getRelative(BlockFace.UP, 1).getType() == Material.SNOW) {
+                                if (random.nextInt(0, 100) < 10) {
+                                    if (!hide) {
+                                        Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
+                                        Methods.addSnowLayer(b);
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+            }
         }
 
         if (LocationVelocityTracker.getTrackers().containsKey(this)) {
@@ -174,12 +177,15 @@ public class Cloud extends BukkitRunnable implements Trackable {
 
 
        if (ElementalAbility.isWater(location.getBlock())) {
-           if (!hide) Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BUBBLE") : Particle.WATER_BUBBLE, location, particleAmount, 0.5, 0.5, 0.5, 0.04);
+           if (!hide) Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, location, particleAmount, 0.5, 0.5, 0.5, 0.04);
        }
 
-       GeneralMethods.getBlocksAroundPoint(location, 5).stream()
-               .filter(ElementalAbility::isLava)
-               .forEach(b -> setAfterFire());
+
+       if (canFireBuffs) {
+           GeneralMethods.getBlocksAroundPoint(location, 5).stream()
+                   .filter(ElementalAbility::isLava)
+                   .forEach(b -> setAfterFire());
+       }
 
         if (isAfterFire && !isForming) {
             if (System.currentTimeMillis() > startAfterFireTiming + fireBuffDuration) isAfterFire = false;
@@ -239,6 +245,10 @@ public class Cloud extends BukkitRunnable implements Trackable {
 
     public void hide() {
         hide =! hide;
+    }
+
+    public void moveTo(Location location, double len) {
+        move(GeneralMethods.getDirection(this.location, location).normalize().multiply(len));
     }
 
     public void move(Vector direction) {

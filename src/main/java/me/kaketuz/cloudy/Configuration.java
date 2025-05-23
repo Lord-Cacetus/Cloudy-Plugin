@@ -1,10 +1,15 @@
 package me.kaketuz.cloudy;
 
+import com.projectkorra.projectkorra.ability.ComboAbility;
+import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.kaketuz.cloudy.util.Config;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Configuration {
 
@@ -14,9 +19,26 @@ public class Configuration {
         configu = new Config(new File("configuration.yml"));
     }
 
+    public enum AvatarStateVars {
+        EVAPORATE(false);
+        private boolean val;
+
+        AvatarStateVars(boolean val) {
+            this.val = val;
+        }
+
+        public boolean isVal() {
+            return val;
+        }
+    }
+
+
+
 
     public static void register() {
         FileConfiguration config = configu.get();
+
+
 
         config.addDefault("Steam.SubElementColor", "#CCEFFF");
 
@@ -43,11 +65,17 @@ public class Configuration {
         config.addDefault("Steam.Evaporate.Enabled", true);
         config.addDefault("Steam.Evaporate.Cooldown", 1000);
         config.addDefault("Steam.Evaporate.SourceRange", 8);
-        config.addDefault("Steam.CloudCushion.ColdBiomesBuff", true);
-        config.addDefault("Steam.CloudCushion.NightBuff", true);
-        config.addDefault("Steam.CloudCushion.BuffFactor", 1.4);
+        config.addDefault("Steam.Evaporate.ColdBiomesBuff", true);
+        config.addDefault("Steam.Evaporate.NightBuff", true);
+        config.addDefault("Steam.Evaporate.BuffFactor", 1.4);
         config.addDefault("Steam.Evaporate.Description", "With this ability, you can create clouds of steam out of water, which you can later control. The steam will fly aimlessly and eventually turn back into water if left unused for a long time. The steam itself is very hot and will cause damage if someone decides to enter it.");
         config.addDefault("Steam.Evaporate.Instructions", "Hold the shift while looking at water or ice. After that, the cloud will rise and begin to float aimlessly in the air.");
+        //Avatarstate 1
+        config.addDefault("Steam.Evaporate.AvatarState.Enabled", true);
+        config.addDefault("Steam.Evaporate.AvatarState.Radius", 3);
+        config.addDefault("Steam.Evaporate.AvatarState.SourceRange", 15);
+        config.addDefault("Steam.Evaporate.AvatarState.MaxClouds", 5);
+        config.addDefault("Steam.Evaporate.AvatarState.Cooldown", 3000);
 
         //SteamControl
         config.addDefault("Steam.SteamControl.Enabled", true);
@@ -110,7 +138,7 @@ public class Configuration {
         config.addDefault("Steam.FumeAbsorption.Instructions", "Hold down the shift. After that, the nearest clouds will start flying towards you. After they reach you, you can release the shift to cause an explosion.");
 
         //VaporBomb
-        config.addDefault("Steam.VaporBomb.Enabled", true);
+        config.addDefault("Steam.VaporBomb.Enabled", false);
         config.addDefault("Steam.VaporBomb.Speed", 2);
         config.addDefault("Steam.VaporBomb.GravityFactor", 0.08);
         config.addDefault("Steam.VaporBomb.GravityMultiplier", 0.02);
@@ -158,7 +186,7 @@ public class Configuration {
         config.addDefault("Steam.CloudFission.FreezeTicks", 500);
         config.addDefault("Steam.CloudFission.SlowLevel", 2);
         config.addDefault("Steam.CloudFission.Radius", 5);
-        config.addDefault("Steam.CloudFission.SlowDuration", 2000);
+        config.addDefault("Steam.CloudFission.SlowDuration", 40);
         config.addDefault("Steam.CloudFission.MaxClouds", 9);
         config.addDefault("Steam.CloudFission.ColdBiomesBuff", true);
         config.addDefault("Steam.CloudFission.NightBuff", true);
@@ -222,7 +250,7 @@ public class Configuration {
         config.addDefault("Steam.Combo.GloomyHails.CanGrowPlants", true);
         config.addDefault("Steam.Combo.GloomyHails.CanRegen", true);
         config.addDefault("Steam.Combo.GloomyHails.PlantsGrowChance", 30);
-        config.addDefault("Steam.Combo.GloomyHails.RegenDuration", 2000);
+        config.addDefault("Steam.Combo.GloomyHails.RegenDuration", 20);
         config.addDefault("Steam.Combo.GloomyHails.RegenLevel", 2);
         config.addDefault("Steam.Combo.GloomyHails.Combination", Arrays.asList("Evaporate:SHIFT_DOWN", "Evaporate:SHIFT_UP", "Evaporate:SHIFT_DOWN", "Evaporate:SHIFT_UP", "Evaporate:LEFT_CLICK", "Evaporate:SHIFT_DOWN"));
         config.addDefault("Steam.Combo.GloomyHails.Description", "This combination will help you turn all the nearby clouds into gloomy clouds that will form a powerful hail under them.");
@@ -265,6 +293,38 @@ public class Configuration {
         config.addDefault("Steam.Passives.ThermalTheft.Description", "If Firebender next to you throws a fire charge into the water, a cloud will form at the point of impact.");
         config.addDefault("Steam.Passives.ThermalTheft.Instructions", "You must be close to the position where the fire hits the water.");
 
+
+        Arrays.stream(AvatarStateVars.values()).forEach(as -> {
+            StringBuilder builder = new StringBuilder();
+            boolean toUpper = true;
+
+            for (char c : as.name().toLowerCase().toCharArray()) {
+                if (c == '_') {
+                    toUpper = true;
+                } else {
+                    if (toUpper) {
+                        builder.append(Character.toUpperCase(c));
+                        toUpper = false;
+                    } else {
+                        builder.append(c);
+                    }
+                }
+            }
+
+            String absolute = builder.toString();
+
+            CoreAbility ability = CoreAbility.getAbility(absolute);
+            boolean enabled;
+            if (ability instanceof ComboAbility) {
+                enabled = config.getBoolean("Steam.Combo." + absolute + ".AvatarState.Enabled");
+            }
+            else {
+                enabled = config.getBoolean("Steam." + absolute + ".AvatarState.Enabled");
+            }
+            as.val = enabled;
+        });
+
         configu.save();
     }
+
 }

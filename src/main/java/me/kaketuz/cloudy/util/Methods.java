@@ -11,14 +11,19 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.SplittableRandom;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class Methods {
 
@@ -142,4 +147,55 @@ public class Methods {
     public static Biome getBiome(Location location) {
         return location.getBlock().getBiome();
     }
+
+    public static void knockback(Entity entity, Location from, double power) {
+        entity.setVelocity(GeneralMethods.getDirection(from, entity.getLocation()).normalize().multiply(power));
+    }
+
+    public static void getEntities(Player player, Location centre, double rad, Consumer<Entity> todo) {
+        GeneralMethods.getEntitiesAroundPoint(centre, rad).stream()
+                .takeWhile(e -> e instanceof LivingEntity && !player.getUniqueId().equals(e.getUniqueId()))
+                .forEach(todo);
+    }
+
+    public static Predicate<? super Entity> getEntityPredicator(Player player) {
+        return e -> e instanceof LivingEntity && !player.getUniqueId().equals(e.getUniqueId());
+    }
+    public static <K, V> void removeIf(Map<K, V> map, BiPredicate<K, V> filter) {
+        map.entrySet().removeIf(entry -> filter.test(entry.getKey(), entry.getValue()));
+    }
+    public static <K, V> void removeIf_concurrent(ConcurrentHashMap<K, V> map, BiPredicate<K, V> filter) {
+        map.entrySet().removeIf(entry -> filter.test(entry.getKey(), entry.getValue()));
+    }
+
+    public static Location getCenter(Collection<Location> locations) {
+        if (locations == null || locations.isEmpty()) {
+            throw new IllegalArgumentException("Collection is empty!");
+        }
+
+        double sumX = 0, sumY = 0, sumZ = 0;
+        int count = 0;
+        String worldName = null;
+
+        for (Location loc : locations) {
+            if (worldName == null) {
+                worldName = loc.getWorld().getName();
+            } else if (!loc.getWorld().getName().equals(worldName)) {
+                throw new IllegalArgumentException("All locations should be in the same world");
+            }
+
+            sumX += loc.getX();
+            sumY += loc.getY();
+            sumZ += loc.getZ();
+            count++;
+        }
+
+        return new Location(
+                locations.iterator().next().getWorld(),
+                sumX / count,
+                sumY / count,
+                sumZ / count
+        );
+    }
+
 }

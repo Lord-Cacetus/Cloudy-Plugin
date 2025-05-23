@@ -4,6 +4,7 @@ import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.Ability;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import me.kaketuz.cloudy.abilities.steam.avatarstate.ASVariation;
 import me.kaketuz.cloudy.abilities.steam.passives.Condensation;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
 import me.kaketuz.cloudy.abilities.sub.SteamAbility;
@@ -14,8 +15,13 @@ import me.kaketuz.cloudy.util.logger.ANSIValues;
 import me.kaketuz.cloudy.util.logger.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import paperlib.projectkorra.PaperLib;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public final class Cloudy extends JavaPlugin {
@@ -64,12 +70,8 @@ public final class Cloudy extends JavaPlugin {
 
     public static String getAuthor(Ability ability) {
         if (ability.getElement() == SteamAbility.STEAM) {
-            return GradientAPI.colorize("<#919CC2>| ᴋᴀᴋᴇᴛᴜᴢ</#D2FFFA>");
+            return GradientAPI.colorize("<#919CC2>| ʟᴏʀᴅ ᴄᴀᴄᴇᴛᴜs</#D2FFFA>");
         }
-        else if (ability.getElement() == Element.LAVA) {
-            return GradientAPI.colorize("<#FF5C00>| ᴋᴀᴋᴇᴛᴜᴢ</#CB1825>");
-        }
-
         return "kaketuz :/";
     }
 
@@ -77,10 +79,6 @@ public final class Cloudy extends JavaPlugin {
         if (ability.getElement() == SteamAbility.STEAM) {
             return GradientAPI.colorize("<#919CC2>[sᴛᴇᴀᴍʙᴇɴᴅɪɴɢ: " + version + "]</#D2FFFA>");
         }
-        else if (ability.getElement() == Element.LAVA) {
-            return GradientAPI.colorize("<#FF5C00>[ʟᴀᴠᴀʙᴇɴᴅɪɴɢ: " + version + "]</#CB1825>");
-        }
-
         return "[idk element xd]: " + version;
     }
 }

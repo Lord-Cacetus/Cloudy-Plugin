@@ -193,16 +193,21 @@ public class CloudCushion extends SteamAbility implements AddonAbility {
                         });
             }
 
+
             GeneralMethods.getEntitiesAroundPoint(center, radius).forEach(e -> {
                 if (affectOtherSteambenders && e instanceof Player p &&
                         BendingPlayer.getBendingPlayer(p) != null &&
                         BendingPlayer.getBendingPlayer(p).canUseSubElement(STEAM)) {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10, jumpBoost - 1, true, false, false));
+
+                    if (GeneralMethods.getMCVersion() > 1204) p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 10, jumpBoost - 1, true, false, false));
+                    else p.addPotionEffect(new PotionEffect(PotionEffectType.getByName("JUMP"), 10, jumpBoost - 1, true, false, false));
+
                     p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, speedBoost - 1, true, false, false));
                     e.setFallDistance(.0f);
                 }
                 else if (e.equals(player)) {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10, jumpBoost - 1, true, false, false));
+                    if (GeneralMethods.getMCVersion() > 1204) player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 10, jumpBoost - 1, true, false, false));
+                    else player.addPotionEffect(new PotionEffect(PotionEffectType.getByName("JUMP"), 10, jumpBoost - 1, true, false, false));
                     player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, speedBoost - 1, true, false, false));
                     player.setFallDistance(.0f);
                 }

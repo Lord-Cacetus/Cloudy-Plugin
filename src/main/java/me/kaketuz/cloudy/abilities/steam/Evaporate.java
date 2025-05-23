@@ -9,6 +9,8 @@ import com.projectkorra.projectkorra.waterbending.ice.PhaseChange;
 import com.projectkorra.projectkorra.waterbending.multiabilities.WaterArmsSpear;
 import com.projectkorra.projectkorra.waterbending.passive.FastSwim;
 import me.kaketuz.cloudy.Cloudy;
+import me.kaketuz.cloudy.Configuration;
+import me.kaketuz.cloudy.abilities.steam.avatarstate.ASEvaporate;
 import me.kaketuz.cloudy.abilities.steam.util.Cloud;
 import me.kaketuz.cloudy.abilities.sub.SteamAbility;
 import me.kaketuz.cloudy.util.Methods;
@@ -36,6 +38,10 @@ public class Evaporate extends SteamAbility implements AddonAbility {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this)) return;
 
+        if (bPlayer.isAvatarState() && Configuration.AvatarStateVars.EVAPORATE.isVal()) {
+            new ASEvaporate(player);
+            return;
+        }
 
         cooldown = Cloudy.config.getLong("Steam.Evaporate.Cooldown");
         sourceRange = Cloudy.config.getDouble("Steam.Evaporate.SourceRange");
@@ -77,11 +83,11 @@ public class Evaporate extends SteamAbility implements AddonAbility {
                 else if (!PhaseChange.thaw(source)) source.setType(Material.WATER);
                 Sounds.playSound(source.getLocation(), Sound.BLOCK_GLASS_BREAK, 0.3f, 1.5f);
 
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK") : Particle.BLOCK_CRACK, source.getLocation(), 20, 0.5, 0.5, 0.5, 0, Material.ICE.createBlockData());
+                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, source.getLocation(), 20, 0.5, 0.5, 0.5, 0, Material.ICE.createBlockData());
             }
-            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("SPLASH") : Particle.WATER_SPLASH, source.getLocation(), 20, 0.5, 0.5, 0.5, 0.1);
+            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_SPLASH") : Particle.SPLASH, source.getLocation(), 20, 0.5, 0.5, 0.5, 0.1);
             Particles.spawnParticle(Particle.BUBBLE_POP, source.getLocation(), 10, 0.5, 0.5, 0.5, 0.1);
-            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BUBBLE") : Particle.WATER_BUBBLE, source.getLocation(), 20, 0.5, 0.5, 0.5, 0.1);
+            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, source.getLocation(), 20, 0.5, 0.5, 0.5, 0.1);
             Sounds.playSound(source.getLocation(), Sound.BLOCK_BUBBLE_COLUMN_UPWARDS_AMBIENT, 0.3f, 2f);
             Sounds.playSound(source.getLocation(), Sound.ENTITY_BOAT_PADDLE_WATER, 0.5f, 0f);
             Sounds.playSound(source.getLocation(), Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 0.25f, 1);

@@ -113,9 +113,9 @@ public class VaporBomb extends SteamAbility implements AddonAbility {
                 bPlayer.addCooldown(this);
                 remove();
             }
-            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("SPLASH") : Particle.WATER_SPLASH, origin.clone().add(0, 1, 0), 3, 0, 0.2, 0);
+            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_SPLASH") : Particle.SPLASH, origin.clone().add(0, 1, 0), 3, 0, 0.2, 0);
             Particles.spawnParticle(Particle.BUBBLE_POP, origin.clone().add(0, 1, 0), 3, 0.5, 0, 0.5, 0);
-            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BUBBLE") : Particle.WATER_BUBBLE, origin.clone().add(0, 1, 0), 3, 0.5, 0, 0.5, 0.1);
+            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, origin.clone().add(0, 1, 0), 3, 0.5, 0, 0.5, 0.1);
         }
         else {
             Sounds.playSound(location, Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 0.15f, 0.75f);
