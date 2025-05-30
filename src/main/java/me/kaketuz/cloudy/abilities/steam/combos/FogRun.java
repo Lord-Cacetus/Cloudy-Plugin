@@ -123,7 +123,7 @@ public class FogRun extends SteamAbility implements AddonAbility, ComboAbility {
 
         flows.removeIf(SteamFlow::isCancelled);
 
-        Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_WAKE") : Particle.FISHING, player.getLocation(), 10, 0.5, 0, 0.5, 0.1);
+        Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("WATER_WAKE") : Particle.FISHING, player.getLocation(), 10, 0.5, 0, 0.5, 0.1);
         Block topBlock = GeneralMethods.getTopBlock(this.player.getLocation(), 3);
         direction.add(player.getEyeLocation().getDirection().normalize().multiply(angle)).normalize().multiply(speed);
         double waterHeight = (double)topBlock.getY() + 1.2;

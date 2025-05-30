@@ -103,10 +103,10 @@ public class CloudStream extends SteamAbility implements AddonAbility {
             for (int i = 0; i < 10; i++) {
                 Vector rv = Methods.getRandom();
                 Vector rv2 = Methods.getRandom().setY(0).normalize().multiply(2);
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_WAKE") : Particle.FISHING, origin.clone().add(rv2), 0, -rv.getX(), 0, -rv.getZ(), 0.2);
+                Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("WATER_WAKE") : Particle.FISHING, origin.clone().add(rv2), 0, -rv.getX(), 0, -rv.getZ(), 0.2);
                 Sounds.playSound(origin, Sound.ENTITY_BOAT_PADDLE_WATER, 0.15f, 0);
                 Particles.spawnParticle(Particle.CLOUD, origin.clone().subtract(0, 1, 0).add(rv), 0, rv.getX(), 0.1, rv.getZ(), 0.3);
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, origin.clone().subtract(0, 1, 0).add(rv), 0, rv.getX(), 0, rv.getZ(), 0.3);
+                Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, origin.clone().subtract(0, 1, 0).add(rv), 0, rv.getX(), 0, rv.getZ(), 0.3);
             }
         }
         else {

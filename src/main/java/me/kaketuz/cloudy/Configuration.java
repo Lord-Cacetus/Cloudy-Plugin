@@ -285,6 +285,19 @@ public class Configuration {
         config.addDefault("Steam.Combo.CoupleIcicles.Description", "One of the strongest steam combinations is CoupleIcicles. With it, you collect clouds that are near you and transform them into icicles. The more clouds you collect, the more icicles there will be");
         config.addDefault("Steam.Combo.CoupleIcicles.Instructions", "Evaporate: shift down, shift up -> SteamControl: left click -> SteamControl: shift down");
 
+        //ThickHaze
+        config.addDefault("Steam.Combo.ThickHaze.Radius", 10);
+        config.addDefault("Steam.Combo.ThickHaze.Speed", 0.3);
+        config.addDefault("Steam.Combo.ThickHaze.Height", 0.5);
+        config.addDefault("Steam.Combo.ThickHaze.SourceRadius", 10);
+        config.addDefault("Steam.Combo.ThickHaze.SettlementSpeed", 0.5);
+        config.addDefault("Steam.Combo.ThickHaze.FreezeSpeed", 10);
+        config.addDefault("Steam.Combo.ThickHaze.MaxClouds", 9);
+        config.addDefault("Steam.Combo.ThickHaze.Duration", 10000);
+        config.addDefault("Steam.Combo.ThickHaze.Cooldown", 20000);
+        config.addDefault("Steam.Combo.ThickHaze.Combination", Arrays.asList("CloudCushion:LEFT_CLICK", "Evaporate:LEFT_CLICK", "CloudCushion:LEFT_CLICK", "Evaporate:SHIFT_DOWN"));
+        config.addDefault("Steam.Combo.ThickHaze.Description", "With this ability, you allow the nearest clouds to settle on the ground, which creates a thick fog. In it, players will not be able to see anything and will gradually freeze.");
+        config.addDefault("Steam.Combo.ThickHaze.Instructions", "CloudCushion: left click -> (Evaporate) left click -> CloudCushion: left click -> Evaporate: shift down");
 
         //Passives
         //ThermalTheft

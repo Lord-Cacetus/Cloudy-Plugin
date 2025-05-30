@@ -140,7 +140,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
         locations.forEach(l -> {
             l.add(direction);
                 Vector rv = Methods.getRandom().multiply(radius).setY(0).normalize();
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("REDSTONE") : Particle.DUST, l.clone().add(rv), 10, radius / 2, 0.3, radius / 2, 0, new Particle.DustOptions(Color.fromRGB(175, 175, 175), 2.5f));
+                Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("REDSTONE") : Particle.DUST, l.clone().add(rv), 10, radius / 2, 0.3, radius / 2, 0, new Particle.DustOptions(Color.fromRGB(175, 175, 175), 2.5f));
             Sounds.playSound(l, Sound.ENTITY_PHANTOM_FLAP, 0.1f, 0.75f);
 
             RayTraceResult result = Objects.requireNonNull(l.getWorld()).rayTraceBlocks(l, direction, speed, FluidCollisionMode.NEVER, true);
@@ -290,7 +290,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
 
             if (!displayVar) {
                 if (!rain) {
-                    Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
+                    Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
                     new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
                 }
             }
@@ -320,7 +320,7 @@ public class GloomyHails extends SteamAbility implements AddonAbility, ComboAbil
             super.cancel();
             if (!rain) Sounds.playSound(location, Sound.BLOCK_GLASS_BREAK, 0.5f, 1.4f);
             if (displayVar && !rain) {
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(icicle.getItemStack()).getType().createBlockData());
+                Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(icicle.getItemStack()).getType().createBlockData());
                 icicle.remove();
 
             }

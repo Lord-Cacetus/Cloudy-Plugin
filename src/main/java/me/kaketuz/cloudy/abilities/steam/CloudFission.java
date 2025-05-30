@@ -74,7 +74,7 @@ public class CloudFission extends SteamAbility implements AddonAbility {
 
             Particles.spawnParticle(Particle.SNOWFLAKE, c.getLocation(), 50, 0.2, 0.2, 0.2, 0.3);
             Particles.spawnParticle(Particle.FALLING_DUST, c.getLocation(), 10, 0.2, 0.2, 0.2, 0, Material.ICE.createBlockData());
-            Particles.spawnParticle(GeneralMethods.getMCVersion() > 1204 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, c.getLocation(), 10, 0.2, 0.2, 0.2, 0, Material.ICE.createBlockData());
+            Particles.spawnParticle(GeneralMethods.getMCVersion() <= 1204 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, c.getLocation(), 10, 0.2, 0.2, 0.2, 0, Material.ICE.createBlockData());
 
             GeneralMethods.getEntitiesAroundPoint(c.getLocation(), radius).stream()
                     .filter(e -> e instanceof LivingEntity && !e.getUniqueId().equals(player.getUniqueId()))
@@ -139,7 +139,7 @@ public class CloudFission extends SteamAbility implements AddonAbility {
 
             Particles.spawnParticle(Particle.SNOWFLAKE, c.getLocation(), 50, 0.2, 0.2, 0.2, 0.3);
             Particles.spawnParticle(Particle.FALLING_DUST, c.getLocation(), 10, 0.2, 0.2, 0.2, 0, Material.ICE.createBlockData());
-            Particles.spawnParticle(GeneralMethods.getMCVersion() > 1204 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, c.getLocation(), 10, 0.2, 0.2, 0.2, 0, Material.ICE.createBlockData());
+            Particles.spawnParticle(GeneralMethods.getMCVersion() <= 1204 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, c.getLocation(), 10, 0.2, 0.2, 0.2, 0, Material.ICE.createBlockData());
 
             GeneralMethods.getEntitiesAroundPoint(c.getLocation(), radius).stream()
                     .filter(e -> e instanceof LivingEntity && !e.getUniqueId().equals(player.getUniqueId()))

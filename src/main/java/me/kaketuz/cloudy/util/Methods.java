@@ -47,6 +47,17 @@ public class Methods {
         return new Vector(-Math.cos(pitch) * Math.sin(yaw), -Math.sin(pitch), Math.cos(pitch) * Math.cos(yaw));
     }
 
+    public static Vector getEllipseIgnoreY(double height) {
+        double angle = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
+
+        double radius = 1.0;
+
+        double x = Math.cos(angle) * radius;
+        double z = Math.sin(angle) * radius;
+
+        return new Vector(x, ThreadLocalRandom.current().nextDouble(-height, height), z).normalize();
+    }
+
     public static boolean isWarmBiome(Location loc) {
         Biome b = loc.getBlock().getBiome();
         return b.equals(Biome.BADLANDS) ||

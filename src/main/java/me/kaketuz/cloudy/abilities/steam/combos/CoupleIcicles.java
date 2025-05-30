@@ -52,7 +52,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
     private final List<ItemDisplay> displays = new CopyOnWriteArrayList<>();
 
-    private final ConcurrentHashMap<Cloud, AtomicBoolean> clouds = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Cloud, Boolean> clouds = new ConcurrentHashMap<>();
 
     private boolean coldBiomesBuff, nightBuff;
     private double buffFactor;
@@ -111,7 +111,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                 if (c.getOwner() != null && !c.getOwner().equals(player)) continue;
             }
             c.setOwner(player);
-            clouds.put(c, new AtomicBoolean(false));
+            clouds.put(c, false);
             count++;
             if (count >= maxClouds) break;
         }
@@ -143,7 +143,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         }
 
         ratio += ringSpeed;
-        if (currShots != 0 && clouds.values().stream().anyMatch(AtomicBoolean::get)) {
+        if (currShots != 0 && clouds.values().stream().anyMatch(b -> b)) {
             for (int i = 0; i < currShots; i++) {
                 double angle = i * (2 * Math.PI / currShots);
                 double x = currRad * Math.cos(angle + ratio);
@@ -170,7 +170,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
         clouds.forEach((c, b) -> {
 
-            if (!b.get()) {
+            if (!b) {
                 c.addLivetime(100);
                 c.move(GeneralMethods.getDirection(c.getLocation(), player.getEyeLocation()).normalize().multiply(followSpeed));
                 if (c.getLocation().distance(player.getEyeLocation()) < 2) {
@@ -205,7 +205,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                     Sounds.playSound(player.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 0.5f, 0);
                     flag = false;
                     c.remove(true);
-                    b.set(true);
+                    clouds.replace(c, true);
                 }
             }
         });
@@ -366,7 +366,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
 
             if (!displayVar) {
                 Particles.spawnParticle(Particle.SNOWFLAKE, location, 0, direction.getX(), direction.getY(), direction.getZ(), 0.2);
-                Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
+                Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 1, 0, 0, 0, 0, Material.ICE.createBlockData());
                 new ColoredParticle(Color.fromRGB(140, 180, 198), 1).display(location, 1, 0, 0, 0);
             }
             else {
@@ -388,7 +388,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                     .map(RayTraceResult::getHitBlock)
                     .filter(GeneralMethods::isSolid)
                     .ifPresent(b -> {
-                        Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
+                        Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
                         cancel();
                     });
 
@@ -405,7 +405,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                     .forEach(e -> {
                         DamageHandler.damageEntity(e, player, damage, CoupleIcicles.this);
                         e.setFreezeTicks(15);
-                        Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
+                        Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, location, 10, 0.3, 0.3, 0.3, 0, Material.ICE.createBlockData());
                         if (allowNoDamageTicks) ((LivingEntity)e).setNoDamageTicks(0);
                         cancel();
                     });
@@ -461,7 +461,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         public synchronized void cancel() throws IllegalStateException {
             super.cancel();
             Sounds.playSound(display.getLocation(), Sound.BLOCK_GLASS_BREAK, 1, 1);
-            Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, display.getLocation(), 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(display.getItemStack()).getType().createBlockData());
+            Particles.spawnParticle(GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("BLOCK_CRACK") : Particle.BLOCK, display.getLocation(), 15, 0.2, 0.2, 0.2, 0, Objects.requireNonNull(display.getItemStack()).getType().createBlockData());
             display.remove();
         }
     }
@@ -478,7 +478,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
         return speed;
     }
 
-    public ConcurrentHashMap<Cloud, AtomicBoolean> getClouds() {
+    public ConcurrentHashMap<Cloud, Boolean> getClouds() {
         return clouds;
     }
 

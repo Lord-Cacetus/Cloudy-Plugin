@@ -1,5 +1,5 @@
 name: Cloudy
-version: '1.3.0-BETA-1'
+version: '1.3.0-BETA-2'
 main: me.kaketuz.cloudy.Cloudy
 api-version: '1.20'
 authors: [ Lord_Cacetus_ ]
@@ -42,67 +42,72 @@ permissions:
       bending.ability.gloomyhails: true
       bending.ability.gloomyrains: true
       bending.ability.thermaltheft: true
+      bending.ability.thickhaze: true
 
   bending.steam.combos:
-    default: false
+    default: true
     description: Grants access to Steam combos
 
   bending.steam.passive:
-    default: false
+    default: true
     description: Grants access to Steam passive abilities
 
   bending.ability.evaporate:
-    default: false
+    default: true
     description: Grants access to the Evaporate ability
 
   bending.ability.steamcontrol:
-    default: false
+    default: true
     description: Grants access to the SteamControl ability
 
   bending.ability.cloudcushion:
-    default: false
+    default: true
     description: Grants access to the CloudCushion ability
 
+  bending.ability.thickhaze:
+    default: true
+    description: Grants access to the ThickHaze ability
+
   bending.ability.cloudstream:
-    default: false
+    default: true
     description: Grants access to the CloudStream ability
 
   bending.ability.fumeabsorption:
-    default: false
+    default: true
     description: Grants access to the FumeAbsorption ability
 
   bending.ability.vaporbomb:
-    default: false
+    default: true
     description: Grants access to the VaporBomb ability
 
   bending.ability.cloudfission:
-    default: false
+    default: true
     description: Grants access to the CloudFission ability
 
   bending.ability.cloudstreamgeyser:
-    default: false
+    default: true
     description: Grants access to the CloudStreamGeyser ability
 
   bending.ability.coupleicicles:
-    default: false
+    default: true
     description: Grants access to the CoupleIcicles ability
 
   bending.ability.fogrun:
-    default: false
+    default: true
     description: Grants access to the FogRun ability
 
   bending.ability.followingsteams:
-    default: false
+    default: true
     description: Grants access to the FollowingSteams ability
 
   bending.ability.gloomyhails:
-    default: false
+    default: true
     description: Grants access to the GloomyHails ability
 
   bending.ability.gloomyrains:
-    default: false
+    default: true
     description: Grants access to the GloomyRains ability
 
   bending.ability.thermaltheft:
-    default: false
+    default: true
     description: Grants access to the ThermalTheft ability

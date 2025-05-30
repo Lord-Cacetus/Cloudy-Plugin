@@ -11,6 +11,7 @@ import me.kaketuz.cloudy.util.Methods;
 import me.kaketuz.cloudy.util.Particles;
 import me.kaketuz.cloudy.util.Sounds;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class SteamControl extends SteamAbility implements AddonAbility {
 
@@ -33,7 +35,7 @@ public class SteamControl extends SteamAbility implements AddonAbility {
 
     private final List<Cloud> clouds = new CopyOnWriteArrayList<>();
 
-    private ConcurrentHashMap<Cloud, AtomicBoolean> readyClouds; //<---- omagad atomic boolean
+    private ConcurrentHashMap<Cloud, Boolean> readyClouds;
 
     //private final List<Pair<Cloud, Boolean>> readyClouds = new CopyOnWriteArrayList<>();
 
@@ -111,13 +113,13 @@ public class SteamControl extends SteamAbility implements AddonAbility {
             readyClouds = new ConcurrentHashMap<>(clouds.size());
 
             for (Cloud cloud : clouds) {
-                readyClouds.put(cloud, new AtomicBoolean(false));
+                readyClouds.put(cloud, false);
             }
         }
         else {
             if (!hasAbility(player, FollowingSteams.class)) return;
             clouds.addAll(getAbility(player, FollowingSteams.class).getUsableClouds());
-            getAbility(player, FollowingSteams.class).getUsableClouds().forEach(c -> readyClouds.put(c, new AtomicBoolean(true)));
+            getAbility(player, FollowingSteams.class).getUsableClouds().forEach(c -> readyClouds.put(c, true));
             getAbility(player, FollowingSteams.class).removeAllClouds();
         }
 
@@ -139,18 +141,21 @@ public class SteamControl extends SteamAbility implements AddonAbility {
             remove();
         }
 
+
+
         target = GeneralMethods.getTargetedLocation(player, 4);
 
         clouds.forEach(c -> {
             if (!c.isOnVelocityTracker()) {
-                readyClouds.get(c).set(c.getLocation().distance(target) < 1);
+                readyClouds.replace(c, c.getLocation().distance(target) < 1);
                 c.move(GeneralMethods.getDirection(c.getLocation(), target).normalize().multiply(followSpeed));
             }
         });
 
-        clouds.removeIf(Cloud::isCancelled);
+        clouds.removeIf(c -> c.isCancelled() || !Objects.equals(c.getOwner(), player));
         readyClouds.forEach((c, b) -> {
-            if (c.isCancelled()) readyClouds.remove(c, b);
+            if (c.isCancelled() || !Objects.equals(c.getOwner(), player)) readyClouds.remove(c, b);
+            if (b && !c.isUsing()) c.setUse(true);
         });
 
 
@@ -177,14 +182,16 @@ public class SteamControl extends SteamAbility implements AddonAbility {
     }
 
     public void throwCloud() {
-        if (readyClouds.values().stream().noneMatch(AtomicBoolean::get)) return;
+        if (readyClouds.values().stream().noneMatch(b -> b)) return;
 
 
         AtomicReference<Cloud> cloud = new AtomicReference<>(null);
 
         readyClouds.forEach((c, b) -> {
-            if (b.get() && cloud.get() == null) cloud.set(c);
+            if (b && cloud.get() == null) cloud.set(c);
         });
+
+        cloud.get().setUse(false);
 
         cloud.get().setVelocity(player.getLocation().getDirection().multiply(throwSpeed));
         threwOnce = true;
@@ -193,7 +200,7 @@ public class SteamControl extends SteamAbility implements AddonAbility {
             clouds.remove(cloud.get());
             readyClouds.remove(cloud.get());
         }
-        else readyClouds.get(cloud.get()).set(false);
+        else readyClouds.replace(cloud.get(), false);
 
     }
 
@@ -202,9 +209,11 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         super.remove();
         if (!readyClouds.isEmpty() && threwOnce) {
             Particles.spawnParticle(Particle.CLOUD, target, 30, 0, 0, 0, 0.8);
-            clouds.forEach(c -> {
-                c.setVelocity(Methods.getRandom().normalize().multiply(endBurstPower));
-                c.setUse(false);
+            readyClouds.forEach((c, b) -> {
+                if (b) {
+                    c.setVelocity(Methods.getRandom().normalize().multiply(endBurstPower));
+                    c.setUse(false);
+                }
             });
         }
         clouds.forEach(c -> c.setUse(false));
@@ -269,7 +278,7 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         return Cloudy.config.getString("Steam.SteamControl.Instructions");
     }
 
-    public ConcurrentHashMap<Cloud, AtomicBoolean> getReadyClouds() {
+    public ConcurrentHashMap<Cloud, Boolean> getReadyClouds() {
         return readyClouds;
     }
 
@@ -362,7 +371,7 @@ public class SteamControl extends SteamAbility implements AddonAbility {
         this.nightBuff = nightBuff;
     }
     @Deprecated
-    public void setReadyClouds(ConcurrentHashMap<Cloud, AtomicBoolean> readyClouds) {
+    public void setReadyClouds(ConcurrentHashMap<Cloud, Boolean> readyClouds) {
         this.readyClouds = readyClouds;
     }
 

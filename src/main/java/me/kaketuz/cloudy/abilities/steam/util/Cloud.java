@@ -6,6 +6,7 @@ import com.projectkorra.projectkorra.ability.ElementalAbility;
 import com.projectkorra.projectkorra.airbending.AirBlast;
 import com.projectkorra.projectkorra.airbending.AirSwipe;
 import com.projectkorra.projectkorra.firebending.FireBlast;
+import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.kaketuz.cloudy.Cloudy;
@@ -112,119 +113,104 @@ public class Cloud extends BukkitRunnable implements Trackable {
 
     @Override
     public void run() {
-       // if (Methods.getTemperature(location) >= 1 || Methods.getHumidity(location) <= 0.01) setAfterFire();
+        if (owner != null && (!owner.isOnline() || owner.isDead())) return;
 
-        if (owner != null) {
-            if (owner.isDead() || !owner.isOnline()) owner = null;
-        }
-        if (!hide) {
-            if (getCloudsAroundPoint(location, 10).size() < 5) {
-                Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.2f, 0.75f);
-            }
+        if (!hide && getCloudsAroundPoint(location, 10).size() < 5) {
+            Sounds.playSound(location, Sound.ENTITY_PHANTOM_FLAP, 0.2f, 0.75f);
         }
 
-
-
-        if (location.getBlockY() >= snowVarHeight || Methods.getTemperature(location) <= 0 && snowVariable) {
-
-            if (!hide) {
-                Particles.spawnParticle(Particle.SNOWFLAKE, location, particleAmount / 2, 0.5, 0.5, 0.5, 0);
-
-
-                Optional.ofNullable(Methods.getGround(location, 10))
-                        .ifPresent(b -> {
-                            if (ElementalAbility.isAir(b.getRelative(BlockFace.UP, 1).getType())) {
-                                if (random.nextInt(0, 100) < 20) {
-                                    if (!hide && !ElementalAbility.isWater(b)) {
-                                        Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
-                                        b.getRelative(BlockFace.UP, 1).setType(Material.SNOW);
-                                    }
-                                }
-                            }
-                            if (b.getRelative(BlockFace.UP, 1).getType() == Material.SNOW) {
-                                if (random.nextInt(0, 100) < 10) {
-                                    if (!hide) {
-                                        Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
-                                        Methods.addSnowLayer(b);
-                                    }
-                                }
-                            }
-                        });
-            }
-        }
-
-        if (LocationVelocityTracker.getTrackers().containsKey(this)) {
-            location.add(LocationVelocityTracker.getTrackers().get(this).getVelocity());
-        }
-        else {
-            if (canMoveByAmbient && !isForming) {
-                if (random.nextInt(0, 100) < 5) this.ambientDir.add(Methods.getRandom().setY(0).normalize().multiply(ambientMovementSpeed));
-                move(ambientDir);
-            }
-        }
-
-       if (damage != 0) {
-           GeneralMethods.getEntitiesAroundPoint(location, 1).stream()
-                   .filter(e -> e instanceof LivingEntity && owner != null ? !owner.getUniqueId().equals(e.getUniqueId()) : !Methods.isFireMob(e))
-                   .forEach(e -> Optional.ofNullable(owner)
-                           .ifPresentOrElse(p -> DamageHandler.damageEntity(e, p, isAfterFire ? damage + damageBuffed : damage, CoreAbility.getAbility(Evaporate.class)),
-                                   () -> {
-                                       assert e instanceof LivingEntity;
-                                       ((LivingEntity)e).damage(isAfterFire ? damage + damageBuffed : damage);
-                                   }));
-
-       }
-
-
-       if (ElementalAbility.isWater(location.getBlock())) {
-           if (!hide) Particles.spawnParticle(GeneralMethods.getMCVersion() >= 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE, location, particleAmount, 0.5, 0.5, 0.5, 0.04);
-       }
-
-
-       if (canFireBuffs) {
-           GeneralMethods.getBlocksAroundPoint(location, 5).stream()
-                   .filter(ElementalAbility::isLava)
-                   .forEach(b -> setAfterFire());
-       }
-
-        if (isAfterFire && !isForming) {
-            if (System.currentTimeMillis() > startAfterFireTiming + fireBuffDuration) isAfterFire = false;
-        }
-        if (!hide) {
-             Particles.spawnParticle(Particle.CLOUD, location, particleAmount, 0.5, 0.5, 0.5, isAfterFire? 0.08 : 0.01);
-        }
-
+        spawnSnowEffects();
+        moveOrDrift();
+        handleDamage();
+        spawnWaterParticles();
+        applyFireBuffFromLava();
+        spawnCloudParticles();
 
         if (isForming) {
-            isForming = !this.formTracker.isCancelled();
-        }
-        else {
-            if (canAirAbilitiesMove) {
-                CoreAbility.getAbilities(AirBlast.class).forEach(ab -> Optional.ofNullable(ab.getLocation().getWorld())
-                        .ifPresent(w -> {
-                            if (w.equals(location.getWorld()) && ab.getLocation().distance(location) <= collisionRadius) {
-                                setVelocity(ab.getDirection().clone().multiply(velocity));
-                            }
-                        }));
-                CoreAbility.getAbilities(AirSwipe.class).forEach(as -> Optional.ofNullable(as.getLocation().getWorld())
-                        .ifPresent(w -> {
-                            if (w.equals(location.getWorld()) && as.getLocation().distance(location) <= collisionRadius) {
-                                setVelocity(as.getLocation().getDirection().clone().multiply(velocity));
-                            }
-                        }));
-            }
-            if (canFireBuffs) {
-                CoreAbility.getAbilities(FireBlast.class).forEach(fb -> Optional.ofNullable(fb.getLocation().getWorld())
-                        .ifPresent(w -> {
-                            if (w.equals(location.getWorld()) && fb.getLocation().distance(location) <= 1) {
-                                setAfterFire();
-                            }
-                        }));
-            }
+            isForming = !formTracker.isCancelled();
+        } else {
+            reactToAirAbilities();
+            if (canFireBuffs) checkFireBlasts();
             if (System.currentTimeMillis() > start + duration) remove(false);
-
-
         }
+    }
+
+    private void spawnSnowEffects() {
+        if ((location.getBlockY() >= snowVarHeight || Methods.getTemperature(location) <= 0) && snowVariable && !hide) {
+            Particles.spawnParticle(Particle.SNOWFLAKE, location, particleAmount / 2, 0.5, 0.5, 0.5, 0);
+            Optional.ofNullable(Methods.getGround(location, 10)).ifPresent(b -> {
+                if (ElementalAbility.isAir(b.getRelative(BlockFace.UP).getType()) && random.nextInt(100) < 20 && !ElementalAbility.isWater(b)) {
+                    Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
+                    b.getRelative(BlockFace.UP).setType(Material.SNOW);
+                }
+                if (b.getRelative(BlockFace.UP).getType() == Material.SNOW && random.nextInt(100) < 10) {
+                    Sounds.playSound(location, Sound.BLOCK_POWDER_SNOW_HIT, 0.3f, 0f);
+                    Methods.addSnowLayer(b);
+                }
+            });
+        }
+    }
+
+    private void moveOrDrift() {
+        if (LocationVelocityTracker.getTrackers().containsKey(this)) {
+            location.add(LocationVelocityTracker.getTrackers().get(this).getVelocity());
+        } else if (canMoveByAmbient && !isForming && random.nextInt(100) < 5) {
+            ambientDir.add(Methods.getRandom().setY(0).normalize().multiply(ambientMovementSpeed));
+            move(ambientDir);
+        }
+    }
+
+    private void handleDamage() {
+        if (damage <= 0) return;
+        GeneralMethods.getEntitiesAroundPoint(location, 1).stream()
+                .filter(e -> e instanceof LivingEntity && (owner == null || !owner.getUniqueId().equals(e.getUniqueId())))
+                .forEach(e -> {
+                    if (owner != null) {
+                        DamageHandler.damageEntity(e, owner, isAfterFire ? damage + damageBuffed : damage, CoreAbility.getAbility(Evaporate.class));
+                    } else {
+                        ((LivingEntity) e).damage(isAfterFire ? damage + damageBuffed : damage);
+                    }
+                });
+    }
+
+    private void spawnWaterParticles() {
+        if (!hide && ElementalAbility.isWater(location.getBlock())) {
+            Particle particle = GeneralMethods.getMCVersion() < 1205 ? Particle.valueOf("WATER_BUBBLE") : Particle.BUBBLE;
+            Particles.spawnParticle(particle, location, particleAmount, 0.5, 0.5, 0.5, 0.04);
+        }
+    }
+
+    private void applyFireBuffFromLava() {
+        if (!canFireBuffs) return;
+        GeneralMethods.getBlocksAroundPoint(location, 5).stream()
+                .filter(ElementalAbility::isLava)
+                .findAny()
+                .ifPresent(b -> setAfterFire());
+
+        if (isAfterFire && !isForming && System.currentTimeMillis() > startAfterFireTiming + fireBuffDuration) {
+            isAfterFire = false;
+        }
+    }
+
+    private void spawnCloudParticles() {
+        if (!hide) {
+            Particles.spawnParticle(Particle.CLOUD, location, particleAmount, 0.5, 0.5, 0.5, isAfterFire ? 0.08 : 0.01);
+        }
+    }
+
+    private void reactToAirAbilities() {
+        if (!canAirAbilitiesMove) return;
+        CoreAbility.getAbilities(AirBlast.class).stream()
+                .filter(ab -> ab.getLocation().getWorld().equals(location.getWorld()) && ab.getLocation().distance(location) <= collisionRadius)
+                .findAny()
+                .ifPresent(ab -> move(ab.getDirection().normalize().multiply(velocity)));
+    }
+
+    private void checkFireBlasts() {
+        CoreAbility.getAbilities(FireBlast.class).stream()
+                .filter(fb -> fb.getLocation().getWorld().equals(location.getWorld()) && fb.getLocation().distance(location) <= collisionRadius)
+                .findAny()
+                .ifPresent(fb -> setAfterFire());
     }
 
     public static boolean isLake(Block block) {

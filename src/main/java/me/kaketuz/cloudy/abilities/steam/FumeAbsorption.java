@@ -151,8 +151,8 @@ public class FumeAbsorption extends SteamAbility implements AddonAbility {
         if (GeneralMethods.getMCVersion() >= 1204) {
             Sounds.playSound(player.getLocation(), Sound.ENTITY_BREEZE_IDLE_AIR, 0.6f, 0.5f);
             if (GeneralMethods.getMCVersion() >= 1205) {
-                Sounds.playSound(player.getLocation(), Sound.valueOf("ENTITY_BREEZE_WHIRL"), 2, 0.5f);
-                Sounds.playSound(player.getLocation(), Sound.valueOf("ENTITY_BREEZE_WIND_BURST"), 0.5f, 0);
+                Sounds.playSound(player.getLocation(), Sound.ENTITY_BREEZE_WHIRL, 2, 0.5f);
+                Sounds.playSound(player.getLocation(), Sound.ENTITY_BREEZE_WIND_BURST, 0.5f, 0);
             }
         }
         if (randomDirections) {
