@@ -81,7 +81,7 @@ public class CloudFission extends SteamAbility implements AddonAbility {
                     .forEach(e -> {
                         DamageHandler.damageEntity(e, player, damage, this);
                         e.setFreezeTicks(freezeTicks);
-                        ((LivingEntity)e).addPotionEffect(new PotionEffect(GeneralMethods.getMCVersion() > 1204 ? PotionEffectType.getByName("SLOW") : PotionEffectType.SLOWNESS, slowDuration, slowLevel, true, false, false));
+                        ((LivingEntity)e).addPotionEffect(new PotionEffect(GeneralMethods.getMCVersion() <= 1204 ? PotionEffectType.getByName("SLOW") : PotionEffectType.SLOWNESS, slowDuration, slowLevel, true, false, false));
                     });
             c.remove(true);
         });
@@ -146,7 +146,7 @@ public class CloudFission extends SteamAbility implements AddonAbility {
                     .forEach(e -> {
                         DamageHandler.damageEntity(e, player, damage, this);
                         e.setFreezeTicks(freezeTicks);
-                        ((LivingEntity)e).addPotionEffect(new PotionEffect(GeneralMethods.getMCVersion() > 1204 ? PotionEffectType.getByName("SLOW") : PotionEffectType.SLOWNESS, slowDuration, slowLevel, true, false, false));
+                        ((LivingEntity)e).addPotionEffect(new PotionEffect(GeneralMethods.getMCVersion() <= 1204 ? PotionEffectType.getByName("SLOW") : PotionEffectType.SLOWNESS, slowDuration, slowLevel, true, false, false));
                     });
             c.remove(true);
         });

@@ -137,7 +137,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
             bPlayer.addCooldown(this);
             remove();
         }
-        if (0 >= currShots) {
+        if (0 >= currShots || displays.isEmpty() || !bPlayer.getBoundAbilityName().equals("SteamControl")) {
             bPlayer.addCooldown(this);
             remove();
         }
