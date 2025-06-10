@@ -79,6 +79,9 @@ public class Cloud extends BukkitRunnable implements Trackable {
     private Player owner;
 
     private Cloud(Location location, Player owner) {
+
+
+
         this.location = location;
         this.isForming = true;
         this.owner = owner;
@@ -101,10 +104,8 @@ public class Cloud extends BukkitRunnable implements Trackable {
         this.formTracker = new LocationVelocityTracker(location, new Vector(0, formSpeed, 0), this);
         this.random = new SplittableRandom();
         this.ambientDir = Methods.getRandom().setY(0).normalize().multiply(ambientMovementSpeed);
-        //if (Methods.isNetherBiome(location)) return;
-
-
-
+        //if (Methods.isNetherBiome(location)) return; causes error (ill fix it later :3)
+        if (!Cloudy.addCloudArray(this, owner)) return;
 
 
         clouds.add(this);
@@ -385,6 +386,7 @@ public class Cloud extends BukkitRunnable implements Trackable {
     public synchronized void cancel() throws IllegalStateException {
         super.cancel();
         clouds.remove(this);
+        Cloudy.removeCloudArray(owner, this);
     }
 
     public void addLivetime(long milliseconds) {

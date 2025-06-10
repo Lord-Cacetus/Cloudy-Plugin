@@ -57,6 +57,8 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
     private boolean coldBiomesBuff, nightBuff;
     private double buffFactor;
 
+    private boolean ringCreated;
+
     public CoupleIcicles(Player player) {
         super(player);
         if (!bPlayer.canBendIgnoreBinds(this) || hasAbility(player, CoupleIcicles.class)) return;
@@ -137,10 +139,7 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
             bPlayer.addCooldown(this);
             remove();
         }
-        if (0 >= currShots || displays.isEmpty() || !bPlayer.getBoundAbilityName().equals("SteamControl")) {
-            bPlayer.addCooldown(this);
-            remove();
-        }
+
 
         ratio += ringSpeed;
         if (currShots != 0 && clouds.values().stream().anyMatch(b -> b)) {
@@ -192,7 +191,10 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
                             t.getScale().set(new Vector3f(0.1f, 0.5f, 0.1f));
                             db.setTransformation(t);
                             displays.add(db);
+                            ringCreated = true;
                         }
+
+
                     }
 
                     if (displayVar) recalculateDisplays();
@@ -210,12 +212,22 @@ public class CoupleIcicles extends SteamAbility implements AddonAbility, ComboAb
             }
         });
 
+
+
         if (!flag) {
             if (currRad < ringRadius) currRad += 0.2;
             else currRad = ringRadius;
         }
 
+        if (ringCreated && displays.isEmpty()) {
+            bPlayer.addCooldown(this);
+            remove();
+        }
 
+        if (0 >= currShots || !bPlayer.getBoundAbilityName().equals("SteamControl")) {
+            bPlayer.addCooldown(this);
+            remove();
+        }
     }
 
     private void recalculateDisplays() {

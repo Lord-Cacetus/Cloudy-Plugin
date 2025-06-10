@@ -26,6 +26,11 @@ out/
 *.tar.gz
 *.rar
 
+# Hiding super secret class
+src/main/java/me/kaketuz/cloudy/sqlite/DatabaseManager.java
+
+database.yml
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 

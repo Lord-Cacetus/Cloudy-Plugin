@@ -60,6 +60,8 @@ public class Configuration {
         config.addDefault("Cloud.SnowVariable", true);
         config.addDefault("Cloud.Velocity", 0.5);
         config.addDefault("Cloud.SnowVarHeight", 100);
+        config.addDefault("Cloud.MaxCloudsPerPlayer", -1);
+        config.addDefault("Cloud.FullCloudsMessage", "You have created the maximum number of clouds for yourself!");
 
         //Evaporate
         config.addDefault("Steam.Evaporate.Enabled", true);

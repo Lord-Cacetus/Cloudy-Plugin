@@ -30,6 +30,9 @@ public class ReloadCommand implements TabExecutor {
 
             Configuration.configu.reload();
 
+            Cloudy.maxCloudsPerPlayer = Cloudy.config.getInt("Cloud.MaxCloudsPerPlayer");
+            Cloudy.fullCloudsMsg = Cloudy.config.getString("Cloud.FullCloudsMessage");
+
             sender.sendMessage(GradientAPI.colorize("<#919CC2>ᴄʟᴏᴜᴅʏ | ᴄᴏɴꜰɪɢ ʀᴇʟᴏᴀᴅᴇᴅ!</#D2FFFA>"));
             return true;
         }

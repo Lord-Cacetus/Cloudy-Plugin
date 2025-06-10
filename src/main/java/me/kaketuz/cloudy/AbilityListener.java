@@ -120,6 +120,8 @@ public class AbilityListener implements Listener {
         Cloud.getClouds().forEach(c -> c.remove(true));
 
         Configuration.configu.reload();
+        Cloudy.maxCloudsPerPlayer = Cloudy.config.getInt("Cloud.MaxCloudsPerPlayer");
+        Cloudy.fullCloudsMsg = Cloudy.config.getString("Cloud.FullCloudsMessage");
         event.getSender().sendMessage(GradientAPI.colorize("<#919CC2>ᴄʟᴏᴜᴅʏ | ᴄᴏɴꜰɪɢ ʀᴇʟᴏᴀᴅᴇᴅ!</#D2FFFA>"));
     }
 

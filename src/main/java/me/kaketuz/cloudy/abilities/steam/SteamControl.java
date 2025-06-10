@@ -208,9 +208,10 @@ public class SteamControl extends SteamAbility implements AddonAbility {
     public void remove() {
         super.remove();
         if (!readyClouds.isEmpty() && threwOnce) {
-            Particles.spawnParticle(Particle.CLOUD, target, 30, 0, 0, 0, 0.8);
+
             readyClouds.forEach((c, b) -> {
                 if (b) {
+                    Particles.spawnParticle(Particle.CLOUD, target, 10, 0, 0, 0, 0.8);
                     c.setVelocity(Methods.getRandom().normalize().multiply(endBurstPower));
                     c.setUse(false);
                 }
